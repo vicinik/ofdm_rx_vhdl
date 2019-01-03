@@ -3,6 +3,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity CoarseAlignment is
+	generic (
+		gSymbolLength 	: natural := 160;
+		gSampleBitWidth : natural := 12
+	);
 	port (
 		-- clock, async reset and init signal
 		sys_clk_i				: in std_ulogic;
@@ -10,8 +14,8 @@ entity CoarseAlignment is
 		sys_init_i				: in std_ulogic;
 		
 		-- input data from interpolator
-		rx_data_i_osr_i			: in std_ulogic_vector(11 downto 0);
-		rx_data_q_osr_i			: in std_ulogic_vector(11 downto 0);
+		rx_data_i_osr_i			: in signed((gSampleBitWidth - 1) downto 0);
+		rx_data_q_osr_i			: in signed((gSampleBitWidth - 1) downto 0);
 		rx_data_osr_valid_i		: in std_ulogic;
 		
 		-- inputs from fine alignment and delay outputs for interpolator
@@ -22,11 +26,11 @@ entity CoarseAlignment is
 		rx_data_offset_o		: out std_ulogic_vector(3 downto 0);
 		
 		-- threshold for coarse alignment
-		min_level_i				: in std_ulogic_vector(15 downto 0);
+		min_level_i				: in unsigned(15 downto 0);
 		
 		-- output data to cyclic prefix removal
-		rx_data_i_coarse_o		: out std_ulogic_vector(11 downto 0);
-		rx_data_q_coarse_o		: out std_ulogic_vector(11 downto 0);
+		rx_data_i_coarse_o		: out signed((gSampleBitWidth - 1) downto 0);
+		rx_data_q_coarse_o		: out signed((gSampleBitWidth - 1) downto 0);
 		rx_data_coarse_valid_o	: out std_ulogic;
 		rx_data_symb_start_o	: out std_ulogic	
 	);

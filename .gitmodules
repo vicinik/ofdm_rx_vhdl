@@ -1,0 +1,3 @@
+[submodule "src/grpRx/unitCoarseAlignment/src/UVVM"]
+	path = src/grpRx/unitCoarseAlignment/src/UVVM
+	url = https://github.com/UVVM/UVVM.git

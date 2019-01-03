@@ -48,7 +48,7 @@ for k=1:NumberIterations
     end
     
     %% Modulation Mapper QPSK
-    p=1/sqrt(2);
+    p=2048/sqrt(2);
     ModulationSymbols=zeros(NumberOfSymbols,1);
     for j=1:NumberOfSymbols
         switch num2str(TxSymbols(j,:))

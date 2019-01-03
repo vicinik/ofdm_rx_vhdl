@@ -5,6 +5,6 @@ use ieee.numeric_std.all;
 
 package CoarseAlignment_pack is
 
-
+	
 
 end CoarseAlignment_pack;

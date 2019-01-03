@@ -1,11 +1,6 @@
 # File:			clean_all.do
 # Description:	This script removes all compiled libraries.
 
-echo "------------------------------------------------"
-echo "Remove all libraries"
-echo "------------------------------------------------"
-echo "Delete old libraries when they exist"
-
 if {[file exists uvvm_util] == 1} {
 	echo "Delete library uvvm_util"
 	vdel -all -lib uvvm_util
