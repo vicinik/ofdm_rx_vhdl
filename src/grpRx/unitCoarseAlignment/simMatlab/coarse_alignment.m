@@ -158,12 +158,22 @@ legend('real', "imag")
 
 % plot timing metric
 figure(2);
-plot(0:length(P)-1-NumberOfChips, real(M(1:end-NumberOfChips)))
+plot(0:length(P)-1, real(M))
 grid on
 hold on
-plot(0:length(P_iter)-NumberOfChips, real(M_iter(NumberOfChips:end)))
+plot(0:length(P_iter)-1, real(M_iter))
 title('Coarse Alignment S-Signal')
 xlabel('\rightarrow #Symbols')
 ylabel('\rightarrow Time metric')
 legend('Time metric', "Time metric iterativ")
+
+% plot abs value
+figure(3);
+plot(0:length(P_iter)-1, abs(P_iter))
+grid on
+hold on
+title('Coarse Alignment P-Signal')
+xlabel('\rightarrow #Symbols')
+ylabel('\rightarrow Time metric')
+legend('abs')
     
