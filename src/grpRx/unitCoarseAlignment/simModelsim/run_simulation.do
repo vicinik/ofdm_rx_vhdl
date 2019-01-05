@@ -1,6 +1,5 @@
 # File:			run_simulation.do
-# Description:	This script compiles the DataInterface and
-#				all needed packages
+# Description:	
 
 # quit previous simulation
 quietly quit -sim
@@ -9,7 +8,7 @@ quietly quit -sim
 vsim work.tbCoarseAlignment
 
 # load wave window
-#do wave.do
+do wave.do
 
 # run simulation
 run -all
@@ -20,4 +19,5 @@ if { $returncode > 2 } then {
 	echo "Exiting because of errors during simulation!"
 }
 
-quit -sim
+wave zoom full
+#quit -sim

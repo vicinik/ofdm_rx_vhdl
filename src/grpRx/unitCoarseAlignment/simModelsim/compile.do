@@ -16,4 +16,5 @@ vcom -check_synthesis -work work ../src/coarse_alignment-e.vhd
 vcom -check_synthesis -work work ../src/coarse_alignment-a.vhd
 
 #compile testbench
+vcom -2008 -work work ../src/ofdm_helper-p.vhd
 vcom -2008 -work work ../src/tb_coarse_alignment-ea.vhd
