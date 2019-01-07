@@ -17,7 +17,7 @@ package ofdm_helper is
 	constant cOfdmSignalLength : natural := 800;	
 	type OFDMSignal is array (1 to cOfdmSignalLength) of ComplexSample;
 
-	-- This function reads a ofdm signal
+	-- Function read a ofdm signal from a file and returns the signal as array of comples samples
 	impure function read_ofdm_signal (
 		file_name : in String
 	) return OFDMSignal;
@@ -40,8 +40,9 @@ package body ofdm_helper is
 		-- open file to read ofdm signal
 		file_open(v_signal_file, file_name, read_mode);
 		
+		-- read data from the given file as sequence of integers and store
+		-- the results as OFDMSignal type (see above)
 		while not endfile(v_signal_file) and (v_idx <= v_ofdm_signal'right) loop
-			-- read data from file
 			readline(v_signal_file, v_line);
 			read(v_line, v_I);
 			read(v_line, v_space);
@@ -53,7 +54,7 @@ package body ofdm_helper is
 			v_idx := v_idx + 1;
 		end loop;
 		
-		-- close file
+		-- close file and return read signal
 		file_close(v_signal_file);		
 		return v_ofdm_signal;
 	end;

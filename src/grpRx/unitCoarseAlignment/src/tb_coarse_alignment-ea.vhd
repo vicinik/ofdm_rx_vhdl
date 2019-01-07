@@ -37,7 +37,6 @@ architecture Bhv of tbCoarseAlignment is
 	signal interp_mode : std_ulogic := '0';
 	signal delay : std_ulogic_vector(3 downto 0);
 	signal offset : std_ulogic_vector(3 downto 0);
-	signal min_level : unsigned(15 downto 0) := (others => '0');
 	signal rx_data_i_out : signed(11 downto 0) := (others => '0');
 	signal rx_data_q_out : signed(11 downto 0) := (others => '0');
 	signal rx_data_out_valid : std_ulogic := '0';
@@ -60,7 +59,7 @@ begin
 			interp_mode_o => interp_mode,
 			rx_data_delay_o => delay,
 			rx_data_offset_o => offset,
-			min_level_i => min_level,
+			min_level_i => x"9896",
 			rx_data_i_coarse_o => rx_data_i_out,
 			rx_data_q_coarse_o => rx_data_q_out,
 			rx_data_coarse_valid_o => rx_data_out_valid,

@@ -11,6 +11,7 @@ if {[file exists work] == 0} {
 }
 
 #compile design
+vcom -check_synthesis -work work ../src/log_dualis-p.vhd
 vcom -check_synthesis -work work ../src/coarse_alignment-p.vhd
 vcom -check_synthesis -work work ../src/coarse_alignment-e.vhd
 vcom -check_synthesis -work work ../src/coarse_alignment-a.vhd
