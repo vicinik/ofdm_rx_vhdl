@@ -63,7 +63,7 @@ begin
 			rx_data_i_coarse_o => rx_data_i_out,
 			rx_data_q_coarse_o => rx_data_q_out,
 			rx_data_coarse_valid_o => rx_data_out_valid,
-			rx_data_symb_start_o => rx_data_symb_start
+			rx_data_coarse_start_o => rx_data_symb_start
 		);
 
 	------------------------------------------------------------------
