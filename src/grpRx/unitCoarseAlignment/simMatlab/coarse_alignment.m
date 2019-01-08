@@ -3,11 +3,7 @@ clear all; close all; clc;
 global k;
 
 %% settings
-PlotPSD = false;
-PlotTxSignals = false;
-PlotRfSpectrum = false;    
-PlotPhase = true;
-PlotTimingMetric = true;
+storeToFile = true;
 
 NumberIterations = 5;
 NumberOfSubcarrier = 128;
@@ -87,6 +83,23 @@ for k=1:NumberIterations
     allTx = [allTx; RxAntennaChips];
 end
 
+% limit data into [-2048 2047]
+allTx = allTx * 1000;
+reAllTx = min(real(allTx), 2047);
+reAllTx = max(reAllTx, -2048);
+imAllTx = max(imag(allTx), -2048);
+imAllTx = min(imAllTx, 2047);
+allTx = reAllTx + 1i*imAllTx;
+
+if storeToFile
+    fid = fopen("test_ofdm_symbols.txt", "w");
+    for i=1:length(allTx)
+        fprintf(fid, "%d ", int32(real(allTx(i))));
+        fprintf(fid, "%d\n", int32(imag(allTx(i))));
+    end
+    fclose(fid);
+end
+
 P = zeros(length(allTx), 1);
 R = zeros(length(allTx), 1);
 
@@ -131,14 +144,36 @@ end
 
 M_iter = (abs(P_iter).^2) ./ (R_iter.^2);
 
-% plot timing metric
+% plot p-signal
 figure(1);
-plot(0:length(P)-1-NumberOfChips, real(M(1:end-NumberOfChips)))
+plot(0:length(P_iter)-1, real(P_iter))
 grid on
 hold on
-plot(0:length(P_iter)-NumberOfChips, real(M_iter(NumberOfChips:end)))
-title('Rough Alignment')
+plot(0:length(P_iter)-1, imag(P_iter))
+title('Coarse Alignment P-Signal')
+xlabel('\rightarrow #Symbols')
+ylabel('\rightarrow Time metric')
+legend('real', "imag")
+
+
+% plot timing metric
+figure(2);
+plot(0:length(P)-1, real(M))
+grid on
+hold on
+plot(0:length(P_iter)-1, real(M_iter))
+title('Coarse Alignment S-Signal')
 xlabel('\rightarrow #Symbols')
 ylabel('\rightarrow Time metric')
 legend('Time metric', "Time metric iterativ")
+
+% plot abs value
+figure(3);
+plot(0:length(P_iter)-1, abs(P_iter))
+grid on
+hold on
+title('Coarse Alignment P-Signal')
+xlabel('\rightarrow #Symbols')
+ylabel('\rightarrow Time metric')
+legend('abs')
     
