@@ -3,37 +3,37 @@ architecture Rtl of TbdOfdmRx is
     signal interp_mode_v       : std_ulogic := '0';
     signal rx_data_delay_v     : std_ulogic_vector(3 downto 0) := (others => '0');
     signal rx_data_offset_v    : std_ulogic_vector(3 downto 0) := (others => '0');
-    signal rx_data_i_osr_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
-    signal rx_data_q_osr_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
+    signal rx_data_i_osr_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
+    signal rx_data_q_osr_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
     signal rx_data_osr_valid_v : std_ulogic := '0';
     -- coarse alignment connection signals
     signal offset_inc_v           : std_ulogic := '0';
     signal offset_dec_v           : std_ulogic := '0';
-    signal rx_data_i_coarse_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
-    signal rx_data_q_coarse_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
+    signal rx_data_i_coarse_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
+    signal rx_data_q_coarse_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
     signal rx_data_coarse_valid_v : std_ulogic := '0';
     signal rx_data_coarse_start_v : std_ulogic := '0';
     -- cp removal connection signals
-    signal rx_data_i_fft_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
-    signal rx_data_q_fft_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
+    signal rx_data_i_fft_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
+    signal rx_data_q_fft_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
     signal rx_data_fft_valid_v : std_ulogic := '0';
     signal rx_data_fft_start_v : std_ulogic := '0';
     -- fft wrapper connection signals
-    signal rx_symbols_i_fft_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
-    signal rx_symbols_q_fft_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
+    signal rx_symbols_i_fft_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
+    signal rx_symbols_q_fft_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
     signal rx_symbols_fft_valid_v : std_ulogic := '0';
     signal rx_symbols_fft_start_v : std_ulogic := '0';
     -- fine alignment connection signals
-    signal rx_symbols_i_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
-    signal rx_symbols_q_v     : signed((sample_bit_width_c - 1) downto 0) := (others => '0');
+    signal rx_symbols_i_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
+    signal rx_symbols_q_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
     signal rx_symbols_valid_v : std_ulogic := '0';
     signal rx_symbols_start_v : std_ulogic := '0';
 begin
     -- interpolation instantiation
     interpolation_inst : entity work.Interpolation
         generic map(
-            symbol_length_g      => symbol_length_c,
-            sample_bit_width_g   => sample_bit_width_c
+            symbol_length_g      => symbol_length_g,
+            sample_bit_width_g   => sample_bit_width_g
         )
         port map(
             sys_clk_i            => sys_clk_i,
@@ -53,8 +53,8 @@ begin
     -- coarse alignment instantiation
     coarse_alignment_inst : entity work.CoarseAlignment
         generic map(
-            symbol_length_g      => symbol_length_c,
-            sample_bit_width_g   => sample_bit_width_c
+            symbol_length_g      => symbol_length_g,
+            sample_bit_width_g   => sample_bit_width_g
         )
         port map(
             sys_clk_i               => sys_clk_i,
@@ -78,9 +78,9 @@ begin
     -- cp removal instantiation
     cp_removal_inst : entity work.CpRemoval
         generic map(
-            symbol_length_g      => symbol_length_c,
-            raw_symbol_length_g  => raw_symbol_length_c,
-            sample_bit_width_g   => sample_bit_width_c
+            symbol_length_g      => symbol_length_g,
+            raw_symbol_length_g  => raw_symbol_length_g,
+            sample_bit_width_g   => sample_bit_width_g
         )
         port map(
             sys_clk_i              => sys_clk_i,
@@ -99,8 +99,8 @@ begin
     -- fft wrapper instantiation
     fft_wrapper_inst : entity work.FftWrapper
         generic map(
-            raw_symbol_length_g  => raw_symbol_length_c,
-            sample_bit_width_g   => sample_bit_width_c
+            raw_symbol_length_g  => raw_symbol_length_g,
+            sample_bit_width_g   => sample_bit_width_g
         )
         port map(
             sys_clk_i              => sys_clk_i,
@@ -119,8 +119,8 @@ begin
     -- fine alignment instantiation
     fine_alignment_inst : entity work.FineAlignment
         generic map(
-            raw_symbol_length_g  => raw_symbol_length_c,
-            sample_bit_width_g   => sample_bit_width_c
+            raw_symbol_length_g  => raw_symbol_length_g,
+            sample_bit_width_g   => sample_bit_width_g
         )
         port map(
             sys_clk_i              => sys_clk_i,
@@ -141,8 +141,8 @@ begin
     -- demodulation instantiation
     demodulation_inst : entity work.Demodulation
         generic map(
-            raw_symbol_length_g  => raw_symbol_length_c,
-            sample_bit_width_g   => sample_bit_width_c
+            raw_symbol_length_g  => raw_symbol_length_g,
+            sample_bit_width_g   => sample_bit_width_g
         )
         port map(
             sys_clk_i           => sys_clk_i,
