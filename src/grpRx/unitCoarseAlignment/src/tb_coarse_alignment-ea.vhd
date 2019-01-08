@@ -16,7 +16,10 @@ architecture Bhv of tbCoarseAlignment is
 	-- constants
 	constant cSysClkPeriod : time := 10 ns; -- 100 MHz
 	constant cDataClkPeriod : time := 250 ns; -- 4 MS/s
+	constant cSamplesPerSymbol : natural := 160;
+	constant cSampleBitWidth : natural := 12;
 	constant cTimeBeforeRisingEdge : time := cSysClkPeriod / 10;
+	constant cTrainingsSymbolPosition : natural := 2;
 
 	-- signals
 	signal sys_clk : std_ulogic := '0';
@@ -47,6 +50,10 @@ begin
     -- DUV
     ------------------------------------------------------------------
 	DUV: entity work.CoarseAlignment
+		generic map (
+			symbol_length_g => cSamplesPerSymbol,
+			sample_bit_width_g => cSampleBitWidth
+		)
 		port map (
 			sys_clk_i 	=> sys_clk,
 			sys_rstn_i 	=> reset_n,
@@ -108,7 +115,7 @@ begin
     -- Testcase Sequencer 
     ------------------------------------------------------------------
 	TestcaseSequencer: process
-		variable test : integer := 0;
+		variable vDetectionTime : time := (cTrainingsSymbolPosition * cSamplesPerSymbol) * cDataClkPeriod;
 	begin	
 	    -- init uvvm, set log files and enable log messages
         set_log_file_name("CoarseAlignment.txt");
@@ -132,8 +139,28 @@ begin
 		log(ID_LOG_HDR, "Find correlation peak");
 		log(ID_SEQUENCER, "Start OFDM signal transmission");
 		enable_ofdm_signal_generation <= true;
-		wait on ofdm_signal_finished;
-		log(ID_SEQUENCER, "OFDM signal transmission is over");
+		await_value(interp_mode, '1', vDetectionTime - cDataClkPeriod, vDetectionTime + cDataClkPeriod, ERROR, "Interpolation mode '1' when peak is detected");		
+		
+		log(ID_LOG_HDR, "Start of symbol and valid generation");
+		await_value(rx_data_symb_start, '1', 0 ns, cDataClkPeriod, ERROR, "Start of symbol active");
+		await_value(rx_data_symb_start, '0', 0.99*cSysClkPeriod, 1.01*cSysClkPeriod, ERROR, "Start of symbol inactive");
+		await_value(rx_data_out_valid, '1', 0 ns, cDataClkPeriod, ERROR, "Data valid active");
+		await_value(rx_data_out_valid, '0', 0.99*cSysClkPeriod, 1.01*cSysClkPeriod, ERROR, "Data valid inactive");		
+		await_value(rx_data_symb_start, '1', 0 ns, cSamplesPerSymbol * cDataClkPeriod, ERROR, "Next Start of symbol active");
+		
+		log(ID_LOG_HDR, "Rx output data stream");		
+		for i in 1 to cSamplesPerSymbol loop
+			log(ID_SEQUENCER, "OFDM sample " & integer'image(i));
+			check_value(rx_data_out_valid, '1', MATCH_EXACT, ERROR, "Data valid active for sample");
+			check_value(rx_data_i_in, rx_data_i_out, ERROR, "I part of sample");
+			check_value(rx_data_q_in, rx_data_q_out, ERROR, "Q part of sample");
+			log(ID_SEQUENCER, "");
+			
+			if i /= cSamplesPerSymbol then
+				wait for cDataClkPeriod;
+			end if;
+		end loop;
+		await_value(rx_data_symb_start, '1', 0 ns, 1.01*cDataClkPeriod, ERROR, "Start of symbol active at next sample");
 	
 		log(ID_LOG_HDR, "Stop simulation");
 		enable_sys_clock <= false;

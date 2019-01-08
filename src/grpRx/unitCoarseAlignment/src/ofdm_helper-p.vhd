@@ -10,12 +10,14 @@ use std.env.all;
 context uvvm_util.uvvm_util_context;
 
 package ofdm_helper is
-	type ComplexSample is record
+	type aComplexSample is record
 		I : signed(11 downto 0);
 		Q : signed(11 downto 0);
 	end record;
+	
 	constant cOfdmSignalLength : natural := 800;	
-	type OFDMSignal is array (1 to cOfdmSignalLength) of ComplexSample;
+	
+	type OFDMSignal is array (1 to cOfdmSignalLength) of aComplexSample;
 
 	-- Function read a ofdm signal from a file and returns the signal as array of comples samples
 	impure function read_ofdm_signal (
