@@ -33,7 +33,8 @@ begin
     interpolation_inst : entity work.Interpolation
         generic map(
             symbol_length_g      => symbol_length_g,
-            sample_bit_width_g   => sample_bit_width_g
+            sample_bit_width_g   => sample_bit_width_g,
+            osr_g                => osr_g
         )
         port map(
             sys_clk_i            => sys_clk_i,
@@ -54,7 +55,8 @@ begin
     coarse_alignment_inst : entity work.CoarseAlignment
         generic map(
             symbol_length_g      => symbol_length_g,
-            sample_bit_width_g   => sample_bit_width_g
+            sample_bit_width_g   => sample_bit_width_g,
+            osr_g                => osr_g
         )
         port map(
             sys_clk_i               => sys_clk_i,

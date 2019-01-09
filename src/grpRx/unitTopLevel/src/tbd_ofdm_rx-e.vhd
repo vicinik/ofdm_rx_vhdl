@@ -6,7 +6,8 @@ entity TbdOfdmRx is
     generic(
         sample_bit_width_g  : natural := 12;
         symbol_length_g     : natural := 160;
-        raw_symbol_length_g : natural := 128
+        raw_symbol_length_g : natural := 128;
+        osr_g               : natural := 10
     );
     port(
         -- clock, reset and init ports

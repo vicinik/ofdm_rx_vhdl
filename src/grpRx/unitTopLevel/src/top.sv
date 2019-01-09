@@ -8,6 +8,7 @@ module top;
 	parameter symbol_length_c = 160;
 	parameter raw_symbol_length_c = 128;
 	parameter sample_bit_width_c = 12;
+	parameter osr_c = 10;
 	logic sys_clk = 0, sys_rstn = 1;
 	
 	// Clk generator
@@ -18,7 +19,8 @@ module top;
 	TbdOfdmRx #(
 		sample_bit_width_c,
 		symbol_length_c,
-		raw_symbol_length_c
+		raw_symbol_length_c,
+		osr_c
 	) tbd_ofdm_rx(
 		sys_clk,
 		sys_rstn,
