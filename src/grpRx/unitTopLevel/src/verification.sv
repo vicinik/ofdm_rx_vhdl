@@ -40,19 +40,24 @@ class Verification;
 	endfunction;
 	
 	function void printInfo(string message);
-		$display("[%t] INFO    : %s", $realtime, message);
+		$display("[%10t] INFO    : %s", $realtime, message);
+	endfunction
+
+	function void printError(string message);
+		check(0, Error);
+		$display("[%10t] ERROR   : %s", $realtime, message);
 	endfunction
 	
 	function void assertNotEqual(int actValue, int nExpValue, string message, eSeverity severity = Error);
 		string assertStr = check(actValue != nExpValue, severity);
 		// Display message with timestamp
-		$display("[%t] %s %s, Act: 0x%8X, Not exp: 0x%8X", $realtime, assertStr, message, actValue, nExpValue);
+		$display("[%10t] %s %s, Act: 0x%8X, Not exp: 0x%8X", $realtime, assertStr, message, actValue, nExpValue);
 	endfunction
 	
 	function void assertEqual(int actValue, int expValue, string message, eSeverity severity = Error);
 		string assertStr = check(actValue == expValue, severity);
 		// Display message with timestamp
-		$display("[%t] %s %s, Act: 0x%8X, Exp: 0x%8X", $realtime, assertStr, message, actValue, expValue);
+		$display("[%10t] %s %s, Act: 0x%8X, Exp: 0x%8X", $realtime, assertStr, message, actValue, expValue);
 	endfunction
 
 	function string check(assertion, eSeverity severity);

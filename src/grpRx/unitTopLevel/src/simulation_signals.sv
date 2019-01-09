@@ -24,6 +24,9 @@ class SimulationSignals;
 
         // Read input signal file (I and Q values)
         fd = $fopen(input_file, "r");
+        if (!fd) begin
+            $error($psprintf("Could not open file %s", input_file));
+        end
         while (!$feof(fd)) begin
             input_signal_i = new[i+1](input_signal_i);
             input_signal_q = new[i+1](input_signal_q);
@@ -34,6 +37,9 @@ class SimulationSignals;
 
         // Read output signal file (bitstream)
         fd = $fopen(output_file, "r");
+        if (!fd) begin
+            $error($sprintf("Could not open file %s", output_file));
+        end
         i = 0;
         while (!$feof(fd)) begin
             output_signal = new[(i+1)](output_signal);

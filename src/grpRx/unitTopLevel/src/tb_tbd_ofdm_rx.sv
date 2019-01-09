@@ -56,6 +56,32 @@ module TbTbdOfdmRx #(
 		rx_data_input_idx = 0;
 	endtask
 
+	// Task for testing a sequence of symbols
+	task testSequence(input int idx);
+		initSystem();
+
+		verify.printSubHeader($psprintf("Testing RX chain with symbol sequence #%0d", idx));
+		verify.printInfo("Loading input data and result bitstream from file");
+		signals.readFiles($psprintf("../data/rx_in_signal%0d.csv", idx), $psprintf("../data/result_bits%0d.csv", idx));
+		verify.printInfo("Feeding system with RX symbols");
+		writeInputSignals();
+
+		// Wait until either half of the output bit stream was received or
+		// a timeout occurs
+		fork : f
+			begin
+				wait (rx_data_output_idx >= $size(signals.output_signal)/2);
+				verify.printInfo("Received and verified half of the output bitstream");
+				disable f;
+			end
+			begin
+				#10ms;
+				verify.printError("Didn't get any output bitstream after 10ms");
+				disable f;
+			end
+		join
+	endtask
+
 	// Process which validates the received bitstream
 	always @(posedge ofdm_rx_if.rx_rcv_data_valid) begin
 		automatic int idx = rx_data_output_idx, exp = 0;
@@ -91,18 +117,11 @@ module TbTbdOfdmRx #(
 	
 		// Run that wonderful system
 		sys_rstn = 1;
-		initSystem();
 		
 		// Tests
-		verify.printSubHeader("Stuffing signals into machinery");
-		verify.printInfo("Loading data from file");
-		signals.readFiles("../data/rx_in_signal0.csv", "../data/result_bits0.csv");
-		verify.printInfo("Receiving signals");
-		writeInputSignals();
-
-		// Not all components are done yet
-		//wait (rx_data_output_idx >= $size(signals.output_signal)/2);
-		verify.printInfo("Not all components are implemented yet, so ciao bella");
+		for (int i = 0; i < 5; i++) begin
+			testSequence(i);
+		end
 		
 		// End of the tests
 		verify.printResult();
