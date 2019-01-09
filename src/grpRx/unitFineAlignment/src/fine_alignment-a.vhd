@@ -1,3 +1,7 @@
+library ieee;
+
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use work.LogDualisPack.all;
 
 architecture Rtl of FineAlignment is
@@ -8,9 +12,9 @@ architecture Rtl of FineAlignment is
   
   type aFineAlignmentRegSet is record
     State   : aState;
-    SumReal : unsigned(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); -- TODO
+    SumReal : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); -- TODO
                                                                                       -- size? 17
-    SumImag : unsigned(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); -- TODO
+    SumImag : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); -- TODO
                                                                                       -- size? 17
     SymbolCounter : unsigned(LogDualis(raw_symbol_length_g) - 1 downto 0);
   end record aFineAlignmentRegSet;
@@ -18,10 +22,11 @@ architecture Rtl of FineAlignment is
   constant cInitFineAlignmentRegSet : aFineAlignmentRegSet := (
     State => Init,
     SumReal => (others => '0'),
-    SumImag => (others => '0')
+    SumImag => (others => '0'),
+    SymbolCounter => (others => '0')
     );
 
-  signal R, NxR : aFineAlginmentRegSet;
+  signal R, NxR : aFineAlignmentRegSet;
   signal sPhase : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) downto 0);--TODO size?
   
  begin
@@ -47,23 +52,23 @@ architecture Rtl of FineAlignment is
       when Phase =>
         -- Only look at cSymbolsUsedForPhase number of symbols for phase calculation
         if R.SymbolCounter /= cSymbolsUsedForPhase then
-          NxR.SymbolCounter <= NxR.SymbolCounter + to_unsigned(1, NxR.SymbolCounter'length);
+          NxR.SymbolCounter <= R.SymbolCounter + to_unsigned(1, NxR.SymbolCounter'length);
           
           -- first quadrant
           if (rx_symbols_i_fft_i > 0) and (rx_symbols_q_fft_i < 0) then
-            NxR.SumReal <= NxR.SumReal - rx_symbols_i_fft_i;
-            NxR.SumImag <= NxR.SumImag + rx_symbols_q_fft_i;
+            NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
+            NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
           -- third quadrant
           elsif (rx_symbols_i_fft_i <= 0) and (rx_symbols_q_fft_i <= 0) then
-            NxR.SumReal <= NxR.SumReal - rx_symbols_i_fft_i;
-            NxR.SumImag <= NxR.SumImag - rx_symbols_q_fft_i;
+            NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
+            NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
           -- second quadrant
           elsif (rx_symbols_i_fft_i < 0) and (rx_symbols_q_fft_i > 0) then
-            NxR.SumReal <= NxR.SumReal + rx_symbols_i_fft_i;
-            NxR.SumImag <= NxR.SumImag - rx_symbols_q_fft_i;
+            NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
+            NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
           else -- first quadrant
-            NxR.SumReal <= NxR.SumReal + rx_symbols_i_fft_i;
-            NxR.SumImag <= NxR.SumImag + rx_symbols_q_fft_i;
+            NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
+            NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
           end if;
         else
           NxR.State <= Align;
@@ -84,11 +89,11 @@ architecture Rtl of FineAlignment is
     
   end process Combinatorial;
 
-  Registering: process (sys_clki, sys_rstn_i) is
+  Registering: process (sys_clk_i, sys_rstn_i) is
   begin  -- process Registering
     if sys_rstn_i = '0' then            -- asynchronous reset (active low)
       R <= cInitFineAlignmentRegSet;
-    elsif sys_clki'event and sys_clki = '1' then  -- rising clock edge
+    elsif sys_clk_i'event and sys_clk_i = '1' then  -- rising clock edge
        R <= NxR;
       if sys_init_i = '1' then
         R <= cInitFineAlignmentRegSet;
@@ -96,7 +101,7 @@ architecture Rtl of FineAlignment is
     end if;
   end process Registering;
 
-  rx_symbols_i_o <= rx_rx_symbols_i_fft_i;
+  rx_symbols_i_o <= rx_symbols_i_fft_i;
   rx_symbols_q_o <= rx_symbols_q_fft_i;
   rx_symbols_valid_o <= rx_symbols_fft_valid_i;
   rx_symbols_start_o <= rx_symbols_fft_start_i;

@@ -1,0 +1,5 @@
+UVVM: ID_LOG_MSG_CTRL                    0.0 ns  TB seq.                        enable_log_msg(ALL_MESSAGES). 
+UVVM: 
+UVVM: 
+UVVM: ID_LOG_HDR                         0.0 ns  TB seq.                        Start clock and generate reset
+UVVM: -------------------------------------------------------------------------------------------------------------------------------------------------------------------------

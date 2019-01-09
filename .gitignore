@@ -12,3 +12,11 @@ src/grpRx/unitFineAlignment/sim/work/_lib1_0\.qpg
 src/grpRx/unitFineAlignment/sim/work/_lib1_0\.qtl
 
 src/grpRx/unitFineAlignment/sim/work/_vmake
+
+src/grpRx/unitFineAlignment/sim/FineAlignment_alert\.txt
+
+src/grpRx/unitFineAlignment/sim/uvvm_util/
+
+src/grpRx/unitFineAlignment/sim/uvvm_vvc_framework/
+
+src/grpRx/unitFineAlignment/sim/work/

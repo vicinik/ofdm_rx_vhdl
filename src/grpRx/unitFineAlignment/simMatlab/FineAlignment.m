@@ -113,3 +113,12 @@ ylabel('Phase');
 title('Phase of RX Symbols');
 legend({'RX Symbols'},'Location','best');
 grid on;
+
+%% Write test data file
+
+[fileID, errormsg]= fopen('Test_RxModSymbols.txt','wt+')
+
+for i=1:NumberOfSubcarrier
+   fprintf(fileID, '%d %d\n', real(RxModSymbols(i)), imag(RxModSymbols(i))); 
+end
+fclose(fileID);
