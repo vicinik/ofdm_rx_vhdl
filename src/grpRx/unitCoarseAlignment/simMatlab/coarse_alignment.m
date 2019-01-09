@@ -5,7 +5,7 @@ global k;
 %% settings
 storeToFile = true;
 
-NumberIterations = 5;
+NumberIterations = 100;
 NumberOfSubcarrier = 128;
 NumberOfGuardChips = 32;
 AntennaSampleRate = 1/0.5e-6;

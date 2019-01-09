@@ -38,6 +38,7 @@ architecture Rtl of CoarseAlignment is
 	constant cMaxSampleCounterValue : unsigned(LogDualis(symbol_length_g) - 1 downto 0) := to_unsigned(symbol_length_g, LogDualis(symbol_length_g));
 	constant cInitSampleFifo : aSampleFifo := (others => (I => (others => '0'), Q => (others => '0')));
 	constant cInitCorrelationFifo : aCorrelationFifo := (others => (I => (others => '0'), Q => (others => '0')));
+	constant cMaxDelayOffsetValue : unsigned(3 downto 0) := x"F";
 	
 	constant cInitPValue : aPValue := (
 		I => (others => '0'),
@@ -69,15 +70,20 @@ begin
 			regPValue <= cInitPValue;
 			regCoarse <= cInitCoarseReg;
 		elsif (rising_edge(sys_clk_i)) then
-			regCoarse <= nextRegCoarse;
-			if (rx_data_osr_valid_i = '1') then
-				regPValue <= nextRegPValue;
+			if (sys_init_i = '1') then
+				regPValue <= cInitPValue;
+				regCoarse <= cInitCoarseReg;
+			else
+				regCoarse <= nextRegCoarse;
+				if (rx_data_osr_valid_i = '1') then
+					regPValue <= nextRegPValue;
+				end if;
 			end if;
 		end if;	
 	end process;
 	
 	-- State machine for coarse alignment
-	StateMachine: process (regCoarse, regPValue, min_level_i, rx_data_osr_valid_i) is
+	StateMachine: process (regCoarse, regPValue, min_level_i, rx_data_osr_valid_i, offset_inc_i, offset_dec_i) is
 	begin
 		nextRegCoarse <= regCoarse;
 		interp_mode_o <= '0'; -- interpolator is in oversampling mode
@@ -99,7 +105,7 @@ begin
 				if regCoarse.PrevPValue.I > regPValue.I then
 					nextRegCoarse.State <= CoarseAlignmentDone;
 				end if;
-			-- Coarse alignment is done. The measured delay is stores and passed to the interpolator. The input samples are passed to the output
+			-- Coarse alignment is done. The measured delay is ajusted according to the fine alignment and passed to the interpolator. The input samples are passed to the output
 			-- and the start of symbol signal is generated. The interpolation mode is set to '1'.
 			when CoarseAlignmentDone =>
 				interp_mode_o <= '1'; -- interpolator is in offset mode			
@@ -113,6 +119,29 @@ begin
 					
 					if (regCoarse.SampleCounter = x"00") then
 						nextRegCoarse.OutputSymbolStart <= '1';
+						
+						-- adjust delay and offset for interpolator
+						-- increment offset and delay
+						if (offset_inc_i = '1') and (offset_dec_i = '0') then
+							nextRegCoarse.Offset <= regCoarse.Offset + 1;
+							if (regCoarse.Offset = cMaxDelayOffsetValue) then
+								nextRegCoarse.Offset <= (others => '0');
+								nextRegCoarse.Delay <= regCoarse.Delay + 1;
+								if (regCoarse.Delay = cMaxDelayOffsetValue) then
+									nextRegCoarse.Delay <= (others => '0');
+								end if;
+							end if;						
+						-- decrement offset and delay
+						elsif (offset_inc_i = '0') and (offset_dec_i = '1') then
+							nextRegCoarse.Offset <= regCoarse.Offset - 1;
+							if (regCoarse.Offset = x"0") then
+								nextRegCoarse.Offset <= cMaxDelayOffsetValue;
+								nextRegCoarse.Delay <= regCoarse.Delay - 1;
+								if (regCoarse.Delay = x"0") then
+									nextRegCoarse.Delay <= cMaxDelayOffsetValue;
+								end if;
+							end if;	
+						end if;						
 					else
 						nextRegCoarse.OutputSymbolStart <= '0';
 					end if;
@@ -131,14 +160,19 @@ begin
 			fifoSamples <= cInitSampleFifo;
 			fifoPInterim <= cInitCorrelationFifo;
 		elsif (rising_edge(sys_clk_i)) then
-			if (rx_data_osr_valid_i = '1') then
-				fifoSamples(0) <= (I => rx_data_i_osr_i, Q => rx_data_q_osr_i);
-				fifoPInterim(0) <= pInterim;
-			
-				for i in 1 to (symbol_length_g / 2) - 1 loop
-					fifoSamples(i) <= fifoSamples(i - 1);
-					fifoPInterim(i) <= fifoPInterim(i - 1);
-				end loop;
+			if (sys_init_i = '1') then
+				fifoSamples <= cInitSampleFifo;
+				fifoPInterim <= cInitCorrelationFifo;
+			else
+				if (rx_data_osr_valid_i = '1') then
+					fifoSamples(0) <= (I => rx_data_i_osr_i, Q => rx_data_q_osr_i);
+					fifoPInterim(0) <= pInterim;
+				
+					for i in 1 to (symbol_length_g / 2) - 1 loop
+						fifoSamples(i) <= fifoSamples(i - 1);
+						fifoPInterim(i) <= fifoPInterim(i - 1);
+					end loop;
+				end if;
 			end if;
 		end if;	
 	end process;
