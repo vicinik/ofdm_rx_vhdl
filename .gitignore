@@ -20,3 +20,7 @@ src/grpRx/unitFineAlignment/sim/uvvm_util/
 src/grpRx/unitFineAlignment/sim/uvvm_vvc_framework/
 
 src/grpRx/unitFineAlignment/sim/work/
+
+src/grpRx/unitFineAlignment/sim/FineAlignment\.txt
+
+src/grpRx/unitFineAlignment/sim/vsim\.wlf

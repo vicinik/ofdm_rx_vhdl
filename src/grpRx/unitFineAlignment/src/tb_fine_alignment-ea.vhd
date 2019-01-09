@@ -83,7 +83,7 @@ begin
     -- OFDM signal generator
     ------------------------------------------------------------------
 	OFDMSignalGenerator: process 
-		constant cFileName : String := "test_ofdm_symbols.txt";
+		constant cFileName : String := "../simMatlab/Test_RxModSymbols.txt";
 		variable v_ofdm_signal : OFDMSignal;
 		variable v_idx : natural := v_ofdm_signal'left;
 	begin
@@ -142,9 +142,9 @@ begin
         check_value(rx_symbols_valid, '0', MATCH_EXACT, ERROR, "Output valid signal");
         check_value(rx_symbols_start, '0', MATCH_EXACT, ERROR, "Output start signal");
         check_value(offset_inc, '0', MATCH_EXACT, ERROR, "Increment");
-        check_value(offset_dec, '0', MATCH_EXACT, ERROR, "Decrement");
+        check_value(offset_dec, '1', MATCH_EXACT, ERROR, "Decrement");
 	
-	log(ID_LOG_HDR, "Find correlation peak");
+	log(ID_LOG_HDR, "Fine tune samples");
 	log(ID_SEQUENCER, "Start OFDM signal transmission");
 	enable_ofdm_signal_generation <= true;
 --	await_value(interp_mode, '1', vDetectionTime - cDataClkPeriod, vDetectionTime + cDataClkPeriod, ERROR, "Interpolation mode '1' when peak is detected");		

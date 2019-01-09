@@ -44,8 +44,8 @@ architecture Rtl of FineAlignment is
       when Init  =>
         if rx_symbols_fft_start_i = '1' and rx_symbols_fft_valid_i = '1' then
           NxR.SymbolCounter <= (others => '0');
-          NxR.SumReal <= rx_symbols_i_fft_i;
-          NxR.SumImag <= rx_symbols_q_fft_i;
+          NxR.SumReal((sample_bit_width_g - 1) downto 0) <= rx_symbols_i_fft_i;
+          NxR.SumImag((sample_bit_width_g - 1) downto 0) <= rx_symbols_q_fft_i;
           NxR.State <= Phase;
         end if;
         
@@ -77,10 +77,9 @@ architecture Rtl of FineAlignment is
       when Align =>
         if rx_symbols_fft_start_i = '1' and rx_symbols_fft_valid_i = '1' then
           NxR.SymbolCounter <= (others => '0');
-          NxR.SumReal <= rx_symbols_i_fft_i;
-          NxR.SumImag <= rx_symbols_q_fft_i;
+          NxR.SumReal((sample_bit_width_g - 1) downto 0) <= rx_symbols_i_fft_i;
+          NxR.SumImag((sample_bit_width_g - 1) downto 0) <= rx_symbols_q_fft_i;
           NxR.State <= Phase;
-          sPhase <= R.SumImag - R.SumReal;
         end if;
         
       when others => null;
@@ -106,7 +105,8 @@ architecture Rtl of FineAlignment is
   rx_symbols_valid_o <= rx_symbols_fft_valid_i;
   rx_symbols_start_o <= rx_symbols_fft_start_i;
 
-  offset_inc_o <= '0' when sPhase(sPhase'left) = '1' else '0';
-  offset_dec_o <= '1' when sPhase(sPhase'left) = '0' else '1';
+  sPhase <= '0' & R.SumImag - R.SumReal;
+  offset_inc_o <= '1' when (sPhase(sPhase'left) = '1') else '0';
+  offset_dec_o <= '0' when (sPhase(sPhase'left) = '1') else '1';
 
 end architecture;
