@@ -12,10 +12,8 @@ architecture Rtl of FineAlignment is
   
   type aFineAlignmentRegSet is record
     State   : aState;
-    SumReal : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); -- TODO
-                                                                                      -- size? 17
-    SumImag : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); -- TODO
-                                                                                      -- size? 17
+    SumReal : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); 
+    SumImag : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0); 
     SymbolCounter : unsigned(LogDualis(raw_symbol_length_g) - 1 downto 0);
   end record aFineAlignmentRegSet;
 
@@ -27,15 +25,12 @@ architecture Rtl of FineAlignment is
     );
 
   signal R, NxR : aFineAlignmentRegSet;
-  signal sPhase : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) downto 0);--TODO size?
+  signal sPhase : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) downto 0);
   
  begin
 
   
   Combinatorial: process(R, rx_symbols_i_fft_i, rx_symbols_q_fft_i, rx_symbols_fft_valid_i, rx_symbols_fft_start_i) is
-    
-   -- variable vPhase : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) downto 0);--TODO size?
-    
   begin  -- process Combinatorial
     NxR <= R;
 
@@ -44,41 +39,43 @@ architecture Rtl of FineAlignment is
       when Init  =>
         if rx_symbols_fft_start_i = '1' and rx_symbols_fft_valid_i = '1' then
           NxR.SymbolCounter <= (others => '0');
-          NxR.SumReal((sample_bit_width_g - 1) downto 0) <= rx_symbols_i_fft_i;
-          NxR.SumImag((sample_bit_width_g - 1) downto 0) <= rx_symbols_q_fft_i;
+          NxR.SumReal <= resize(rx_symbols_i_fft_i, R.SumReal'length);
+          NxR.SumImag <= resize(rx_symbols_q_fft_i, R.SumREal'length);
           NxR.State <= Phase;
         end if;
         
       when Phase =>
         -- Only look at cSymbolsUsedForPhase number of symbols for phase calculation
-        if R.SymbolCounter /= cSymbolsUsedForPhase then
-          NxR.SymbolCounter <= R.SymbolCounter + to_unsigned(1, NxR.SymbolCounter'length);
-          
-          -- first quadrant
-          if (rx_symbols_i_fft_i > 0) and (rx_symbols_q_fft_i < 0) then
-            NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
-            NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
-          -- third quadrant
-          elsif (rx_symbols_i_fft_i <= 0) and (rx_symbols_q_fft_i <= 0) then
-            NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
-            NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
-          -- second quadrant
-          elsif (rx_symbols_i_fft_i < 0) and (rx_symbols_q_fft_i > 0) then
-            NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
-            NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
-          else -- first quadrant
-            NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
-            NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
+        if rx_symbols_fft_valid_i = '1' then
+          if R.SymbolCounter /= cSymbolsUsedForPhase then
+            NxR.SymbolCounter <= R.SymbolCounter + to_unsigned(1, NxR.SymbolCounter'length);
+            
+            -- first quadrant
+            if (rx_symbols_i_fft_i > 0) and (rx_symbols_q_fft_i < 0) then
+              NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
+              NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
+            -- third quadrant
+            elsif (rx_symbols_i_fft_i <= 0) and (rx_symbols_q_fft_i <= 0) then
+              NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
+              NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
+            -- second quadrant
+            elsif (rx_symbols_i_fft_i < 0) and (rx_symbols_q_fft_i > 0) then
+              NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
+              NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
+            else -- first quadrant
+              NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
+              NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
+            end if;
+          else
+            NxR.State <= Align;
           end if;
-        else
-          NxR.State <= Align;
         end if;
        
       when Align =>
         if rx_symbols_fft_start_i = '1' and rx_symbols_fft_valid_i = '1' then
           NxR.SymbolCounter <= (others => '0');
-          NxR.SumReal((sample_bit_width_g - 1) downto 0) <= rx_symbols_i_fft_i;
-          NxR.SumImag((sample_bit_width_g - 1) downto 0) <= rx_symbols_q_fft_i;
+          NxR.SumReal <= resize(rx_symbols_i_fft_i, R.SumReal'length);
+          NxR.SumImag <= resize(rx_symbols_q_fft_i, R.SumREal'length);
           NxR.State <= Phase;
         end if;
         
@@ -105,7 +102,7 @@ architecture Rtl of FineAlignment is
   rx_symbols_valid_o <= rx_symbols_fft_valid_i;
   rx_symbols_start_o <= rx_symbols_fft_start_i;
 
-  sPhase <= '0' & R.SumImag - R.SumReal;
+  sPhase <= resize(R.SumImag - R.SumReal, sPhase'length);
   offset_inc_o <= '1' when (sPhase(sPhase'left) = '1') else '0';
   offset_dec_o <= '0' when (sPhase(sPhase'left) = '1') else '1';
 
