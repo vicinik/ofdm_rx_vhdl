@@ -1,3 +1,3 @@
 vsim tbInterpolation
 do wave.do
-run 4us
+run 10us

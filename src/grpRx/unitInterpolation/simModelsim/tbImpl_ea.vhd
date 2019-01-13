@@ -106,7 +106,6 @@ begin
 	begin	
 		file_open(file_RESULTS, "output_results.m", write_mode);
 
-	if cLinear then
 		reset_n	<= '0';
 		wait for 1000 ns;
 		reset_n	<= '1';
@@ -116,55 +115,8 @@ begin
 		wait for cSysClkPeriod;
 		rx_data_in_valid  <= '0';
 		wait for cDataClkPeriod;
-		rx_data_i_in <= to_signed(1500, rx_data_i_in'length);
-		rx_data_q_in <= to_signed(1700, rx_data_q_in'length);
-		rx_data_in_valid  <= '1';
-		wait for cSysClkPeriod;
-		rx_data_in_valid  <= '0';
-		wait for cDataClkPeriod;
-
-		rx_data_i_in <= to_signed(1000, rx_data_i_in'length);
-		rx_data_q_in <= to_signed(1600, rx_data_q_in'length);
-		rx_data_in_valid  <= '1';
-		wait for cSysClkPeriod;
-		rx_data_in_valid  <= '0';
-		wait for cDataClkPeriod;
-
 		rx_data_i_in <= to_signed(1700, rx_data_i_in'length);
-		rx_data_q_in <= to_signed(1500, rx_data_q_in'length);
-		rx_data_in_valid  <= '1';
-		wait for cSysClkPeriod;
-		rx_data_in_valid  <= '0';
-		wait for cDataClkPeriod;
-
-		rx_data_i_in <= to_signed(2040, rx_data_i_in'length);
-		rx_data_q_in <= to_signed(1400, rx_data_q_in'length);
-		rx_data_in_valid  <= '1';
-		--interp_mode <= '1';
-		wait for cSysClkPeriod;
-		rx_data_in_valid  <= '0';
-		wait for cDataClkPeriod;
-
-		rx_data_i_in <= to_signed(1900, rx_data_i_in'length);
-		rx_data_q_in <= to_signed(1300, rx_data_q_in'length);
-		rx_data_in_valid  <= '1';
-		--interp_mode <= '1';
-		wait for cSysClkPeriod;
-		rx_data_in_valid  <= '0';
-
-		wait for 1000 us;
-	else
-		reset_n	<= '0';
-		wait for 1000 ns;
-		reset_n	<= '1';
-		rx_data_i_in <= to_signed(1800, rx_data_i_in'length);
-		rx_data_q_in <= to_signed(1800, rx_data_q_in'length);
-		rx_data_in_valid  <= '1';
-		wait for cSysClkPeriod;
-		rx_data_in_valid  <= '0';
-		wait for cDataClkPeriod;
-		rx_data_i_in <= to_signed(1500, rx_data_i_in'length);
-		rx_data_q_in <= to_signed(1500, rx_data_q_in'length);
+		rx_data_q_in <= to_signed(1700, rx_data_q_in'length);
 		rx_data_in_valid  <= '1';
 		wait for cSysClkPeriod;
 		rx_data_in_valid  <= '0';
@@ -180,6 +132,7 @@ begin
 		rx_data_i_in <= to_signed(1700, rx_data_i_in'length);
 		rx_data_q_in <= to_signed(1700, rx_data_q_in'length);
 		rx_data_in_valid  <= '1';
+		-- interp_mode  <= '1';
 		wait for cSysClkPeriod;
 		rx_data_in_valid  <= '0';
 		wait for cDataClkPeriod;
@@ -187,7 +140,38 @@ begin
 		rx_data_i_in <= to_signed(2040, rx_data_i_in'length);
 		rx_data_q_in <= to_signed(2040, rx_data_q_in'length);
 		rx_data_in_valid  <= '1';
-		--interp_mode <= '1';
+		wait for cSysClkPeriod;
+		rx_data_in_valid  <= '0';
+		wait for cDataClkPeriod;
+
+	
+		rx_data_i_in <= to_signed(1700, rx_data_i_in'length);
+		rx_data_q_in <= to_signed(1700, rx_data_q_in'length);
+		rx_data_in_valid  <= '1';
+		wait for cSysClkPeriod;
+		rx_data_in_valid  <= '0';
+		wait for cDataClkPeriod;
+
+	
+		rx_data_i_in <= to_signed(1600, rx_data_i_in'length);
+		rx_data_q_in <= to_signed(1600, rx_data_q_in'length);
+		rx_data_in_valid  <= '1';
+		wait for cSysClkPeriod;
+		rx_data_in_valid  <= '0';
+		wait for cDataClkPeriod;
+
+	
+		rx_data_i_in <= to_signed(1500, rx_data_i_in'length);
+		rx_data_q_in <= to_signed(1500, rx_data_q_in'length);
+		rx_data_in_valid  <= '1';
+		wait for cSysClkPeriod;
+		rx_data_in_valid  <= '0';
+		wait for cDataClkPeriod;
+
+	
+		rx_data_i_in <= to_signed(1400, rx_data_i_in'length);
+		rx_data_q_in <= to_signed(1400, rx_data_q_in'length);
+		rx_data_in_valid  <= '1';
 		wait for cSysClkPeriod;
 		rx_data_in_valid  <= '0';
 		wait for cDataClkPeriod;
@@ -195,15 +179,12 @@ begin
 		rx_data_i_in <= to_signed(1900, rx_data_i_in'length);
 		rx_data_q_in <= to_signed(1900, rx_data_q_in'length);
 		rx_data_in_valid  <= '1';
-		--interp_mode <= '1';
+		interp_mode <= '1';
 		wait for cSysClkPeriod;
 		rx_data_in_valid  <= '0';
 
 		wait for 1000 us;
-	end if;
 
-
-		
 		file_close(file_RESULTS);
 
 

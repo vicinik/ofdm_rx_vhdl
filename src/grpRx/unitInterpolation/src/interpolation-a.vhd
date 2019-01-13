@@ -1,3 +1,6 @@
+library work;
+use work.UpSampling.all;
+
 architecture Rtl of Interpolation is
 
 	----------------------------------------------------------
@@ -7,8 +10,8 @@ architecture Rtl of Interpolation is
 	type aState is (Init, WaitSample2, WaitSample3, CalcDerived, UpSampling, CalcSample, Done);
 
 	type aComplexSample is record
-		I : signed(sample_bit_width_g - 1 downto 0);	-- real Anteil
-		Q : signed(sample_bit_width_g - 1 downto 0);	-- imag Anteil
+		I : signed(sample_bit_width_g - 1 downto 0);	
+		Q : signed(sample_bit_width_g - 1 downto 0);
 	end record;
 
 	type aData is record
@@ -18,12 +21,12 @@ architecture Rtl of Interpolation is
 	end record;
 
 	type aDerives is record
-		Q : signed(sample_bit_width_g - 1 downto 0);		
-		Q_i : signed(sample_bit_width_g downto 0);		--erste Ableitung imag
-		Q_ii : signed(sample_bit_width_g + 2 downto 0);	-- zweite Ableitung imag
-		I : signed(sample_bit_width_g - 1 downto 0);		
-		I_i : signed(sample_bit_width_g downto 0);		-- erste Ableitung real
-		I_ii : signed(sample_bit_width_g + 2 downto 0);	-- zweite Ableitung real
+		Q : signed(31 downto 0);		
+		Q_i : signed(31 downto 0);		--erste Ableitung
+		Q_ii : signed(31 downto 0);		-- zweite Ableitung
+		I : signed(31 downto 0);		
+		I_i : signed(31 downto 0);
+		I_ii : signed(31 downto 0);	
 	end record;
 
 	type aInterpolationReg is record
@@ -35,6 +38,7 @@ architecture Rtl of Interpolation is
 		Result : aComplexSample;
 		Count : unsigned((osr_g - 1) downto 0);
 		Valid : std_ulogic;
+		Mode : std_ulogic;
 	end record;
 
 	----------------------------------------------------------
@@ -47,8 +51,8 @@ architecture Rtl of Interpolation is
 		Data => (others => (others => (others => '0'))),
 		Result => (others => (others => '0')),
 		Count => "0000",
-		Valid => '0'
-
+		Valid => '0',
+		Mode => '0'
 	);
 
 	----------------------------------------------------------
@@ -65,27 +69,19 @@ begin
   begin
 	if sys_rstn_i = '0' then 
 		Reg <= cInitReg;
-	-- TODO Init System
 	elsif rising_edge(sys_clk_i) then
 		if sys_init_i = '1' then
-			-- TODO Init System
+			Reg <= cInitReg;
 		else
 			Reg <= NxrReg;
 		end if;
 	end if;
   end process;
 
-	fsm: process (Reg, rx_data_valid_i, rx_data_q_i, rx_data_i_i, interp_mode_i, rx_data_delay_i)
-		variable f, fi, fii, count, tmp, result : signed((sample_bit_width_g + 2)*2+1 downto 0) := (others => '0');
-		--variable tmp : signed((sample_bit_width_g + 2)*2+1 downto 0) := (others => '0');
-		--variable fi : signed(sample_bit_width_g + 2 downto 0) := (others => '0'); 
-		--variable fii : signed(sample_bit_width_g + 2 downto 0) := (others => '0');
+	fsm: process (Reg, rx_data_valid_i, rx_data_q_i, rx_data_i_i, interp_mode_i, rx_data_delay_i, rx_data_offset_i)
 	begin
 		NxrReg <= Reg;	   
 
-		rx_data_i_osr_o <= Reg.Result.I;    	
-        rx_data_q_osr_o <= Reg.Result.Q;
-        rx_data_osr_valid_o <= Reg.Valid;
 
 		case Reg.State is
 
@@ -116,16 +112,15 @@ begin
 					NxrReg.State <= CalcDerived;
 				end if;
 
-
 			when CalcDerived =>
-				NxrReg.Derives.Q <= Reg.Data.x2.Q;
-				NxrReg.Derives.I <= Reg.Data.x2.I;
-				NxrReg.Derives.Q_i <= (('0' & Reg.Data.x1.Q) - ('0' & Reg.Data.x2.Q))/16; -- erste Ableitung real
-				NxrReg.Derives.I_i <= ('0' & Reg.Data.x1.I) - ('0' & Reg.Data.x2.I);	-- erste Ableitung imag
-				NxrReg.Derives.Q_ii <= (("000" & Reg.Data.x0.Q) - shift_left(("000" & Reg.Data.x1.Q),1) + ("000" & Reg.Data.x2.Q))/16/16; -- zweite Ableitung real
-				NxrReg.Derives.I_ii <= ("000" & Reg.Data.x0.I) - shift_left(("000" & Reg.Data.x1.I),1) + ("000" & Reg.Data.x2.I); -- zweite Ableitung imag
+				NxrReg.Derives.Q <= resize(Reg.Data.x2.Q,32);
+				NxrReg.Derives.I <= resize(Reg.Data.x2.I,32);
+				NxrReg.Derives.Q_i <= Sub32(Reg.Data.x1.Q,Reg.Data.x2.Q)/(2**osr_g); -- erste Ableitung real
+				NxrReg.Derives.I_i <= Sub32(Reg.Data.x1.I,Reg.Data.x2.I)/(2**osr_g);	-- erste Ableitung imag
+				NxrReg.Derives.I_ii <= Add32(Sub32(Reg.Data.x0.Q,2*Reg.Data.x1.Q),Reg.Data.x2.Q)/((2**osr_g)*(2**osr_g)); -- zweite Ableitung real
+				NxrReg.Derives.Q_ii <= Add32(Sub32(Reg.Data.x0.Q,2*Reg.Data.x1.Q),Reg.Data.x2.Q)/((2**osr_g)*(2**osr_g)); -- zweite Ableitung imag
 
-				if interp_mode_i = '0' then -- OversamplingRate necessary
+				if Reg.Mode = '0' then -- OversamplingRate necessary
 					NxrReg.State <= Upsampling;
 				else -- no oversampling necessary, because alignment has been done yet
 					NxrReg.State <= CalcSample;
@@ -140,69 +135,18 @@ begin
 						NxrReg.State <= Done;   												 	
 					end if;
 					
-					f := (others => '0');	
-					fi := (others => '0');
-					fii := (others => '0');	
-					count := (others => '0');
-					tmp := (others => '0');
 
-					f(sample_bit_width_g - 1 downto 0) := Reg.Derives.Q;	
-					fi(sample_bit_width_g  downto 0) := Reg.Derives.Q_i;
-					fii(sample_bit_width_g + 2 downto 0) := Reg.Derives.Q_ii;	
-					count((osr_g - 1) downto 0) := signed(Reg.Count);
-
-
-					--tmp := shift_right(fii,1)(sample_bit_width_g + 2 downto 0)  * count(sample_bit_width_g + 2 downto 0)-1 ;
-					--tmp := tmp(sample_bit_width_g + 2 downto 0) *16;
-					--result := f + fi + fii + count;
-					--result := f + (fi-tmp(sample_bit_width_g + 2 downto 0));--;
-					--tmp := tmp(sample_bit_width_g + 2 downto 0) * count(sample_bit_width_g + 2 downto 0)-1 ;
-					--result := result + tmp;
-					--(f1-f2/2*osr)*(k-1)
-					tmp := (fi - fii/2);
-					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
-					result := f + tmp;
-					--(f2/2) * (k-1)^2
-					tmp := fii/2;
-					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
-					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
-					 
-					result := result + tmp;
-					NxrReg.Result.Q <= result(sample_bit_width_g - 1 downto 0);
-					--NxrReg.Result.Q <= result(sample_bit_width_g - 1 downto 0);
-					--NxrReg.Result.Q <= Reg.Derives.Q + (("00" & Reg.Derives.Q_i)-shift_right(Reg.Derives.Q_ii,1))(sample_bit_width_g - 1 downto 0); -- * signed(Reg.Count)); -- + (shift_right(Reg.Derives.Q_ii,1)) * (signed(Reg.Count)*signed(Reg.Count));
-					--NxrReg.Result.I <= Reg.Derives.I + ( Reg.Derives.I_i-shift_right(Reg.Derives.I_ii,1) * signed(Reg.Count))  + (shift_right(Reg.Derives.I_ii,1)) * (signed(Reg.Count)*signed(Reg.Count));
-
+					--y_out(k) = f0 + (f1-f2/2*osr)*(k-1) + (f2/2) * (k-1)^2;
+					NxrReg.Result.Q <= GetSample(Reg.Count,osr_g,sample_bit_width_g,Reg.Derives.Q,Reg.Derives.Q_i,Reg.Derives.Q_ii);
+					NxrReg.Result.I <= GetSample(Reg.Count,osr_g,sample_bit_width_g,Reg.Derives.I,Reg.Derives.I_i,Reg.Derives.I_ii);
 					NxrReg.Valid <= '1';
 					NxrReg.Count <= Reg.Count + 1;
 
 
 			when CalcSample => -- Outputs only one Sample with XY Delay From FineAlignment
 
-					f := (others => '0');	
-					fi := (others => '0');
-					fii := (others => '0');	
-					count := (others => '0');
-					tmp := (others => '0');
-
-					f(sample_bit_width_g - 1 downto 0) := Reg.Derives.Q;	
-					fi(sample_bit_width_g  downto 0) := Reg.Derives.Q_i;
-					fii(sample_bit_width_g + 2 downto 0) := Reg.Derives.Q_ii;	
-					count((osr_g - 1) downto 0) := signed(rx_data_delay_i);
-
-					tmp := (fi - fii/2);
-					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
-					result := f + tmp;
-					--(f2/2) * (k-1)^2
-					tmp := fii/2;
-					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
-					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
-					 
-					result := result + tmp;
-					NxrReg.Result.Q <= result(sample_bit_width_g - 1 downto 0);
-					--NxrReg.Result.Q <= result(sample_bit_width_g - 1 downto 0);
-					--NxrReg.Result.Q <= Reg.Derives.Q + (("00" & Reg.Derives.Q_i)-shift_right(Reg.Derives.Q_ii,1))(sample_bit_width_g - 1 downto 0); -- * signed(Reg.Count)); -- + (shift_right(Reg.Derives.Q_ii,1)) * (signed(Reg.Count)*signed(Reg.Count));
-					--NxrReg.Result.I <= Reg.Derives.I + ( Reg.Derives.I_i-shift_right(Reg.Derives.I_ii,1) * signed(Reg.Count))  + (shift_right(Reg.Derives.I_ii,1)) * (signed(Reg.Count)*signed(Reg.Count));
+					NxrReg.Result.Q <= GetSample(unsigned(rx_data_offset_i),osr_g,sample_bit_width_g,Reg.Derives.Q,Reg.Derives.Q_i,Reg.Derives.Q_ii);
+					NxrReg.Result.I <= GetSample(unsigned(rx_data_offset_i),osr_g,sample_bit_width_g,Reg.Derives.I,Reg.Derives.I_i,Reg.Derives.I_ii);
 
 					NxrReg.Valid <= '1';
 					NxrReg.State <= Done;
@@ -214,6 +158,7 @@ begin
 					NxrReg.Data.x1 <= Reg.Data.x0;
 					NxrReg.Data.x2 <= Reg.Data.x1;
 					NxrReg.State <= CalcDerived;
+					NxrReg.Mode <= interp_mode_i;
 				end if;	
 
 				NxrReg.Count <= (others => '0');
@@ -227,8 +172,7 @@ begin
 
 rx_data_i_osr_o <= Reg.Result.I;
 rx_data_q_osr_o <= Reg.Result.Q;
-
-
+rx_data_osr_valid_o <= Reg.Valid;
 
 
 end architecture;
