@@ -57,6 +57,7 @@ architecture Rtl of Interpolation is
 
 	signal Reg, NxrReg : aInterpolationReg;
 
+
 begin
 
 
@@ -74,7 +75,7 @@ begin
 	end if;
   end process;
 
-	fsm: process (Reg, rx_data_valid_i, rx_data_q_i, rx_data_i_i, interp_mode_i)
+	fsm: process (Reg, rx_data_valid_i, rx_data_q_i, rx_data_i_i, interp_mode_i, rx_data_delay_i)
 		variable f, fi, fii, count, tmp, result : signed((sample_bit_width_g + 2)*2+1 downto 0) := (others => '0');
 		--variable tmp : signed((sample_bit_width_g + 2)*2+1 downto 0) := (others => '0');
 		--variable fi : signed(sample_bit_width_g + 2 downto 0) := (others => '0'); 
@@ -178,8 +179,33 @@ begin
 
 			when CalcSample => -- Outputs only one Sample with XY Delay From FineAlignment
 
+					f := (others => '0');	
+					fi := (others => '0');
+					fii := (others => '0');	
+					count := (others => '0');
+					tmp := (others => '0');
 
+					f(sample_bit_width_g - 1 downto 0) := Reg.Derives.Q;	
+					fi(sample_bit_width_g  downto 0) := Reg.Derives.Q_i;
+					fii(sample_bit_width_g + 2 downto 0) := Reg.Derives.Q_ii;	
+					count((osr_g - 1) downto 0) := signed(rx_data_delay_i);
 
+					tmp := (fi - fii/2);
+					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
+					result := f + tmp;
+					--(f2/2) * (k-1)^2
+					tmp := fii/2;
+					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
+					tmp := tmp((sample_bit_width_g + 2) downto 0) * count((sample_bit_width_g + 2) downto 0);
+					 
+					result := result + tmp;
+					NxrReg.Result.Q <= result(sample_bit_width_g - 1 downto 0);
+					--NxrReg.Result.Q <= result(sample_bit_width_g - 1 downto 0);
+					--NxrReg.Result.Q <= Reg.Derives.Q + (("00" & Reg.Derives.Q_i)-shift_right(Reg.Derives.Q_ii,1))(sample_bit_width_g - 1 downto 0); -- * signed(Reg.Count)); -- + (shift_right(Reg.Derives.Q_ii,1)) * (signed(Reg.Count)*signed(Reg.Count));
+					--NxrReg.Result.I <= Reg.Derives.I + ( Reg.Derives.I_i-shift_right(Reg.Derives.I_ii,1) * signed(Reg.Count))  + (shift_right(Reg.Derives.I_ii,1)) * (signed(Reg.Count)*signed(Reg.Count));
+
+					NxrReg.Valid <= '1';
+					NxrReg.State <= Done;
 
 			when Done =>
 				if rx_data_valid_i = '1' then
