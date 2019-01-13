@@ -2,9 +2,12 @@
 use work.LogDualisPack.all;
 
 architecture Rtl of CoarseAlignment is
+	-- constants
+	constant cBufferLength : natural := (symbol_length_g * 2**(osr_g)) / 2;
+	constant cResultValueLength : natural := 30;
 	
 	-- type definitions	
-	type aState is (Init, ThresholdDetection, PeakDetection, CoarseAlignmentDone);
+	type aState is (Init, ThresholdDetection, PeakDetection, WaitOnSymbolFinished, CoarseAlignmentDone);
 	
 	type aComplexSample is record
 		I : signed(sample_bit_width_g - 1 downto 0);
@@ -13,36 +16,36 @@ architecture Rtl of CoarseAlignment is
 	
 	type aPInterimValue is record
 		I : signed(2*sample_bit_width_g - 1 downto 0);
-		Q : signed(2*sample_bit_width_g - 1 downto 0);
+		--Q : signed(2*sample_bit_width_g - 1 downto 0);
 	end record;
 	
-	type aSampleFifo is array (0 to (symbol_length_g / 2) - 1) of aComplexSample;
-	type aCorrelationFifo is array (0 to (symbol_length_g / 2) - 1) of aPInterimValue;
-	
+	type aSampleMemory is array (0 to cBufferLength - 1) of std_ulogic_vector(2*sample_bit_width_g - 1 downto 0);
+	type aCorrelationMemory is array (0 to cBufferLength - 1) of std_ulogic_vector(2*sample_bit_width_g - 1 downto 0);
+		
 	type aPValue is record
-		I : signed((2*sample_bit_width_g + 1) downto 0);
-		Q : signed((2*sample_bit_width_g + 1) downto 0);
+		I : signed(cResultValueLength - 1 downto 0);
+		--Q : signed(cResultValueLength - 1 downto 0);
 	end record;
 	
 	type aCoarseAlignmentReg is record
 		State : aState;
 		PrevPValue : aPValue;
-		Threshold : signed(2*sample_bit_width_g downto 0);
-		SampleCounter : unsigned(7 downto 0);
+		Threshold : signed(cResultValueLength - 1 downto 0);
+		SampleCounter : unsigned(LogDualis(symbol_length_g) - 1 downto 0);
 		OutputSymbolStart : std_ulogic;
 		Delay : unsigned(3 downto 0);
 		Offset : unsigned(3 downto 0);
+		WriteIdx : unsigned(LogDualis(cBufferLength) - 1 downto 0);
+		ReadIdx : unsigned(LogDualis(cBufferLength) - 1 downto 0);
 	end record;
 
 	-- constants
 	constant cMaxSampleCounterValue : unsigned(LogDualis(symbol_length_g) - 1 downto 0) := to_unsigned(symbol_length_g, LogDualis(symbol_length_g));
-	constant cInitSampleFifo : aSampleFifo := (others => (I => (others => '0'), Q => (others => '0')));
-	constant cInitCorrelationFifo : aCorrelationFifo := (others => (I => (others => '0'), Q => (others => '0')));
 	constant cMaxDelayOffsetValue : unsigned(3 downto 0) := x"F";
 	
 	constant cInitPValue : aPValue := (
-		I => (others => '0'),
-		Q => (others => '0')
+		I => (others => '0')
+		--Q => (others => '0')
 	);
 	
 	constant cInitCoarseReg : aCoarseAlignmentReg := (
@@ -52,15 +55,22 @@ architecture Rtl of CoarseAlignment is
 		SampleCounter => (others => '0'),
 		OutputSymbolStart => '0',
 		Delay => (others => '0'),
-		Offset => (others => '0')
+		Offset => (others => '0'),
+		WriteIdx => to_unsigned(cBufferLength - 1, LogDualis(cBufferLength)),
+		ReadIdx => (others => '0')
 	);
 	
 	-- signals
-	signal fifoSamples: aSampleFifo := cInitSampleFifo; -- fifo for I,Q parts of input samples
-	signal fifoPInterim : aCorrelationFifo := cInitCorrelationFifo; -- fifo for I,Q parts of correlation interim result
-	signal pInterim : aPInterimValue := (I => (others => '0'), Q => (others => '0')); -- I,Q part of correlation interim result
+	signal sampleBuffer : aSampleMemory := (others => (others => '0'));
+	signal correlationBuffer : aCorrelationMemory := (others => (others => '0'));
 	signal regPValue, nextRegPValue : aPValue := cInitPValue; -- register for correlation result
 	signal regCoarse, nextRegCoarse	: aCoarseAlignmentReg := cInitCoarseReg; -- register for states of coarse alignment
+	
+	signal rdm : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0');
+	signal rdmL : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0');
+	
+	signal pInterim : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q part of correlation interim result
+	signal pInterimL : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q part of correlation interim result
 begin
 	
 	-- register process to store all needed states and values
@@ -75,7 +85,7 @@ begin
 				regCoarse <= cInitCoarseReg;
 			else
 				regCoarse <= nextRegCoarse;
-				if (rx_data_osr_valid_i = '1') then
+				if (rx_data_osr_valid_i = '1') and (regCoarse.State /= CoarseAlignmentDone) then
 					regPValue <= nextRegPValue;
 				end if;
 			end if;
@@ -88,10 +98,23 @@ begin
 		nextRegCoarse <= regCoarse;
 		interp_mode_o <= '0'; -- interpolator is in oversampling mode
 		
+		if (rx_data_osr_valid_i = '1') and (regCoarse.State /= CoarseAlignmentDone) then
+			nextRegCoarse.WriteIdx <= regCoarse.WriteIdx + 1;
+			nextRegCoarse.ReadIdx <= regCoarse.ReadIdx + 1;
+			
+			if (regCoarse.WriteIdx = cBufferLength - 1) then
+				nextRegCoarse.WriteIdx <= (others => '0');
+			end if;
+			
+			if (regCoarse.ReadIdx = cBufferLength - 1) then
+				nextRegCoarse.ReadIdx <= (others => '0');
+			end if;
+		end if;
+		
 		case regCoarse.State is
 			-- Starts here after reset and activation of init signal. Stores the new threshold value
 			when Init =>
-				nextRegCoarse.Threshold((2*sample_bit_width_g - 1) downto (2*sample_bit_width_g) - min_level_i'length) <= signed(min_level_i);
+				nextRegCoarse.Threshold(cResultValueLength - 2 downto cResultValueLength - min_level_i'length - 1) <= signed(min_level_i);
 				nextRegCoarse.State <= ThresholdDetection;
 			-- Scanes the p signal and detectes if the p signal is higher than the given threshold. Afterwards start the peak detection.
 			when ThresholdDetection =>
@@ -103,6 +126,11 @@ begin
 			when PeakDetection =>
 				nextRegCoarse.PrevPValue <= regPValue;				
 				if regCoarse.PrevPValue.I > regPValue.I then
+					nextRegCoarse.State <= WaitOnSymbolFinished;
+				end if;
+			-- wait if the current symbol at the high rate is done
+			when WaitOnSymbolFinished =>
+				if (rx_data_osr_valid_i = '0') then
 					nextRegCoarse.State <= CoarseAlignmentDone;
 				end if;
 			-- Coarse alignment is done. The measured delay is ajusted according to the fine alignment and passed to the interpolator. The input samples are passed to the output
@@ -152,54 +180,54 @@ begin
 				null;
 		end case;		
 	end process;
+		
+	-- memories for circular buffers
+	rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g) <= std_ulogic_vector(rx_data_i_osr_i);
+	rdm(sample_bit_width_g - 1 downto 0) <= std_ulogic_vector(rx_data_q_osr_i);	
 	
-	-- fifos for correlation calculation of schmidl cox
-	FIFOs: process (sys_clk_i, sys_rstn_i) is
+	SampleMemory: process (sys_clk_i) is
 	begin
-		if (sys_rstn_i = '0') then
-			fifoSamples <= cInitSampleFifo;
-			fifoPInterim <= cInitCorrelationFifo;
-		elsif (rising_edge(sys_clk_i)) then
-			if (sys_init_i = '1') then
-				fifoSamples <= cInitSampleFifo;
-				fifoPInterim <= cInitCorrelationFifo;
-			else
-				if (rx_data_osr_valid_i = '1') then
-					fifoSamples(0) <= (I => rx_data_i_osr_i, Q => rx_data_q_osr_i);
-					fifoPInterim(0) <= pInterim;
-				
-					for i in 1 to (symbol_length_g / 2) - 1 loop
-						fifoSamples(i) <= fifoSamples(i - 1);
-						fifoPInterim(i) <= fifoPInterim(i - 1);
-					end loop;
-				end if;
+		if (rising_edge(sys_clk_i)) then
+			if (rx_data_osr_valid_i = '1') then
+				sampleBuffer(to_integer(regCoarse.WriteIdx)) <= rdm;
 			end if;
-		end if;	
+			rdmL <= sampleBuffer(to_integer(regCoarse.ReadIdx));			
+		end if;
+	end process;
+	
+	CorrelationMemory: process (sys_clk_i) is
+	begin
+		if (rising_edge(sys_clk_i)) then
+			if (rx_data_osr_valid_i = '1') then
+				correlationBuffer(to_integer(regCoarse.WriteIdx)) <= pInterim;
+			end if;
+			pInterimL <= correlationBuffer(to_integer(regCoarse.ReadIdx));
+		end if;
 	end process;
 	
 	-- hardware implementation of schmidl cox algorithmn
-	SchmidlCox: process (regPValue, rx_data_i_osr_i, rx_data_q_osr_i, fifoSamples(fifoSamples'right), fifoPInterim(fifoPInterim'right)) is	
+	SchmidlCox: process (regPValue, rdm, rdmL, pInterimL) is	
 		variable vRdm : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- current I,Q value at input
 		variable vRdmL : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- delayed I,Q value		
-		variable vPInterim : aPInterimValue := (I => (others => '0'), Q => (others => '0')); -- I,Q part of correlation interim result
-		variable vPInterimL : aPInterimValue := (I => (others => '0'), Q => (others => '0')); -- I,Q part of correlation interim result
+		variable vPInterim : aPInterimValue := (I => (others => '0'));--, Q => (others => '0')); -- I,Q part of correlation interim result
+		variable vPInterimL : aPInterimValue := (I => (others => '0'));--, Q => (others => '0')); -- I,Q part of correlation interim result
 	begin
 		nextRegPValue <= regPValue;
 		
 		-- current I,Q samples
-		vRdm := (I => rx_data_i_osr_i, Q => rx_data_q_osr_i);
+		vRdm := (I => signed(rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdm(sample_bit_width_g - 1 downto 0)));
 		-- delayed I,Q samples
-		vRdmL := fifoSamples(fifoSamples'right);
+		vRdmL := (I => signed(rdmL((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdmL(sample_bit_width_g - 1 downto 0)));
 		
 		-- calculate correlation of the input samples. store the interim result in a FIFO
 		vPInterim.I := (vRdm.I * vRdmL.I) - (-vRdm.Q * vRdmL.Q);
-		vPInterim.Q := (-vRdm.Q * vRdmL.I) + (vRdm.I * vRdmL.Q);
-		vPInterimL := fifoPInterim(fifoPInterim'right);
-		pInterim <= vPInterim;
+		--vPInterim.Q := (-vRdm.Q * vRdmL.I) + (vRdm.I * vRdmL.Q);
+		vPInterimL := (I => signed(pInterimL));
+		pInterim <= std_ulogic_vector(vPInterim.I);
 		
 		-- accumulate the differences of the interim results to get the p signal.
 		nextRegPValue.I <= regPValue.I + (vPInterim.I - vPInterimL.I);
-		nextRegPValue.Q <= regPValue.Q + (vPInterim.Q - vPInterimL.Q);		
+		--nextRegPValue.Q <= regPValue.Q + (vPInterim.Q - vPInterimL.Q);		
 	end process;
 	
 	-- pass the input sampels to the output
@@ -208,7 +236,7 @@ begin
 	rx_data_coarse_valid_o <= rx_data_osr_valid_i when regCoarse.State = CoarseAlignmentDone else '0';
 	rx_data_coarse_start_o <= regCoarse.OutputSymbolStart;
 	
-	-- pass the delay to the interpolor unit
+	-- pass the delay to the interpolator unit
 	rx_data_delay_o <= std_ulogic_vector(regCoarse.Delay) when regCoarse.State = CoarseAlignmentDone else (others => '0');
 	rx_data_offset_o <= std_ulogic_vector(regCoarse.Offset) when regCoarse.State = CoarseAlignmentDone else (others => '0');	
 end architecture;

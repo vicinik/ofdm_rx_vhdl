@@ -4,8 +4,10 @@ global k;
 
 %% settings
 storeToFile = true;
+upsampling = true;
+NumberIterations = 5;
+TrainingsSymbolPosition = 2;
 
-NumberIterations = 100;
 NumberOfSubcarrier = 128;
 NumberOfGuardChips = 32;
 AntennaSampleRate = 1/0.5e-6;
@@ -16,7 +18,7 @@ NumberOfSymbols = 128;
 NumberOfBits = 2*NumberOfSymbols;
 NumberOfChips = NumberOfSymbols + NumberOfGuardChips;
 AWGNGain = 0;
-TrainingsSymbolPosition = 2;
+osr = 5;
 
 allTx = [];
 allModulationSymbols = [];
@@ -31,7 +33,6 @@ NoisePower = zeros(NumberIterations, 1);
 SNR = zeros(NumberIterations, 1);
 EVM_rms = zeros(NumberIterations, 1);
 
-% load setting for rf chain
 BaseSampleRate = 2e6;
 
 for k=1:NumberIterations
@@ -83,6 +84,32 @@ for k=1:NumberIterations
     allTx = [allTx; RxAntennaChips];
 end
 
+if upsampling
+    % upsampling to 16 MS/s
+    HighSampleRate = BaseSampleRate*(2^osr);
+    
+    allTx_BR_re=real(allTx);
+    allTx_BR_im=imag(allTx);
+    
+    allTx_t_BR = [0:1/(BaseSampleRate):(length(allTx)-1)/(BaseSampleRate)];
+    allTx_t_HR = [0:1/(HighSampleRate):(length(allTx)-1)/(BaseSampleRate)];
+    allTx_HR_re = interp1(allTx_t_BR, allTx_BR_re, allTx_t_HR,'pchip');
+    allTx_HR_im = interp1(allTx_t_BR, allTx_BR_im, allTx_t_HR,'pchip');
+    allTx = allTx_HR_re + 1i*allTx_HR_im;
+else
+    % upsampling to 4 MS/s
+    HighSampleRate = 2*BaseSampleRate;
+    
+    allTx_BR_re=real(allTx);
+    allTx_BR_im=imag(allTx);
+    
+    allTx_t_BR = [0:1/(BaseSampleRate):(length(allTx)-1)/(BaseSampleRate)];
+    allTx_t_HR = [0:1/(HighSampleRate):(length(allTx)-1)/(BaseSampleRate)];
+    allTx_HR_re = interp1(allTx_t_BR, allTx_BR_re, allTx_t_HR,'pchip');
+    allTx_HR_im = interp1(allTx_t_BR, allTx_BR_im, allTx_t_HR,'pchip');
+    allTx = allTx_HR_re + 1i*allTx_HR_im;    
+end
+
 % limit data into [-2048 2047]
 allTx = allTx * 1000;
 reAllTx = min(real(allTx), 2047);
@@ -106,18 +133,19 @@ R = zeros(length(allTx), 1);
 P_iter = zeros(length(allTx), 1);
 R_iter = zeros(length(allTx), 1);
 
-for idx=1:length(P)-NumberOfChips
-    P(idx) = sum(conj(allTx(idx:idx + ((NumberOfChips/2) - 1))).*allTx(idx + (NumberOfChips/2):idx + (NumberOfChips - 1)));
-    R(idx) = sum(abs(allTx(idx + (NumberOfChips/2):idx + (NumberOfChips - 1))).^2);
+for idx=1:length(P)-(NumberOfChips*2^osr)
+    P(idx) = sum(conj(allTx(idx:idx + ((NumberOfChips * 2^osr)/2) - 1)).* ...
+        allTx(idx + ((NumberOfChips * 2^osr)/2):idx + (NumberOfChips * 2^osr) - 1));
+    R(idx) = sum(abs(allTx(idx + NumberOfChips * 2^osr/2:idx + NumberOfChips*2^osr - 1)).^2);
 end
 
 M = (abs(P).^2) ./ (R.^2);
 [~, delay] = max(M);
 
-fifo = zeros(1, NumberOfChips/2);
-fifo_m = zeros(1, NumberOfChips/2);
+fifo = zeros(1, (NumberOfChips * (2^osr))/2);
+fifo_m = zeros(1, (NumberOfChips * (2^osr))/2);
 
-for i=1:length(allTx)-NumberOfChips
+for i=1:length(allTx)-NumberOfChips*(2^osr)
     % get r_d,m and r_d,m+L
     rdm_i = real(allTx(i));
     rdm_q = imag(allTx(i));

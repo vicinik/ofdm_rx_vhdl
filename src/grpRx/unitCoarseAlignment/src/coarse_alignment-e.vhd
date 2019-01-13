@@ -4,8 +4,9 @@ use ieee.numeric_std.all;
 
 entity CoarseAlignment is
     generic (
-        symbol_length_g   : natural := 160;
-        sample_bit_width_g : natural := 12
+        symbol_length_g   	: natural := 320;
+		osr_g				: natural := 4;
+        sample_bit_width_g 	: natural := 12
     );
     port (
         -- clock, async reset and init signal

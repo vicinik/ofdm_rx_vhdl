@@ -14,13 +14,15 @@ end tbCoarseAlignment;
 
 architecture Bhv of tbCoarseAlignment is
 	-- constants
+	constant cOsr : natural := 4;
 	constant cSysClkPeriod : time := 10 ns; -- 100 MHz
 	constant cDataClkPeriod : time := 250 ns; -- 4 MS/s
-	constant cSamplesPerSymbol : natural := 160;
+	constant cSamplesPerSymbol : natural := 320;
 	constant cSampleBitWidth : natural := 12;
 	constant cTimeBeforeRisingEdge : time := cSysClkPeriod / 10;
 	constant cTrainingsSymbolPosition : natural := 2;
-	constant cOfdmSignalLength : natural := 16000;	
+	constant cOfdmSignalLength16MSs : natural := 25569;
+	constant cOfdmSignalLength4MSs : natural := 32000;	
 
 	-- signals
 	signal sysClk : std_ulogic := '0';
@@ -55,6 +57,7 @@ begin
 	DUV: entity work.CoarseAlignment
 		generic map (
 			symbol_length_g => cSamplesPerSymbol,
+			osr_g => cOsr,
 			sample_bit_width_g => cSampleBitWidth
 		)
 		port map (
@@ -69,7 +72,7 @@ begin
 			interp_mode_o => interpMode,
 			rx_data_delay_o => delay,
 			rx_data_offset_o => offset,
-			min_level_i => x"B71B", --x"9896",
+			min_level_i => x"8F10",
 			rx_data_i_coarse_o => rxDataIOut,
 			rx_data_q_coarse_o => rxDataQOut,
 			rx_data_coarse_valid_o => rxDataOutValid,
@@ -85,23 +88,54 @@ begin
     -- OFDM signal generator
     ------------------------------------------------------------------
 	OFDMSignalGenerator: process 
-		constant cFileName : String := "test_ofdm_symbols.txt";
-		variable vOfdmSignal : OFDMSignal(1 to cOfdmSignalLength);
-		variable vIdx : natural := vOfdmSignal'left;
+		constant cFileName16MSs : String := "test_ofdm_symbols_16MSs.txt";
+		constant cFileName4MSs : String := "test_ofdm_symbols_4MSs.txt";
+		variable vValuesPerSample : natural := 0;
+		variable vOfdmSignal16MSs : OFDMSignal(1 to cOfdmSignalLength16MSs);
+		variable vOfdmSignal4MSs : OFDMSignal(1 to cOfdmSignalLength4MSs);
+		variable vIdx : natural := 1;
+		variable vPrevInterpMode : std_ulogic := '0';
 	begin
 		-- read data from file
-		vOfdmSignal := read_ofdm_signal(cFileName, cOfdmSignalLength);
+		vOfdmSignal16MSs := read_ofdm_signal(cFileName16MSs, cOfdmSignalLength16MSs);
+		vOfdmSignal4MSs := read_ofdm_signal(cFileName4MSs, cOfdmSignalLength4MSs);
 		wait until enableOfdmSignalGeneration;
 		wait_until_given_time_before_rising_edge(sysClk, cTimeBeforeRisingEdge, cSysClkPeriod);
 		
 		while true loop			
 			if enableOfdmSignalGeneration then
-				if (vIdx <= vOfdmSignal'right) then				
-					rxDataIIn <= vOfdmSignal(vIdx).I, (others => '0') after cSysClkPeriod;
-					rxDataQIn <= vOfdmSignal(vIdx).Q, (others => '0') after cSysClkPeriod;
-					rxDataInValid <= '1', '0' after cSysClkPeriod;
-					wait for cDataClkPeriod;
-					vIdx := vIdx + 1;
+				if ((interpMode = '0') and (vIdx <= vOfdmSignal16MSs'right)) or ((interpMode = '1') and (vIdx <= vOfdmSignal4MSs'right)) then		
+
+					if (interpMode = '0') then
+						vValuesPerSample := 2**cOsr;
+					else
+						vValuesPerSample := 1;
+					end if;
+					
+					rxDataInValid <= '1';
+					for i in 0 to (vValuesPerSample - 1) loop
+						if (interpMode = '0') then
+							rxDataIIn <= vOfdmSignal16MSs(vIdx).I, (others => '0') after cSysClkPeriod;
+							rxDataQIn <= vOfdmSignal16MSs(vIdx).Q, (others => '0') after cSysClkPeriod;
+						else
+							rxDataIIn <= vOfdmSignal4MSs(vIdx).I after i*cSysClkPeriod, (others => '0') after (i+1)*cSysClkPeriod;
+							rxDataQIn <= vOfdmSignal4MSs(vIdx).Q after i*cSysClkPeriod, (others => '0') after (i+1)*cSysClkPeriod;
+						end if;											
+						
+						vIdx := vIdx + 1;
+						wait for cSysClkPeriod;
+					end loop;
+					rxDataInValid <= '0';
+				
+					--rxDataIIn <= vOfdmSignal(vIdx).I, (others => '0') after cSysClkPeriod;
+					--rxDataQIn <= vOfdmSignal(vIdx).Q, (others => '0') after cSysClkPeriod;
+					---rxDataInValid <= '1', '0' after cSysClkPeriod;
+					wait for (cDataClkPeriod - vValuesPerSample * cSysClkPeriod);
+					if vPrevInterpMode /= interpMode then
+						vIdx := 1;
+					end if;
+					vPrevInterpMode := interpMode;
+					--vIdx := vIdx + 1;
 				else
 					-- signal generation is done so this process can stop
 					ofdmSignalFinished <= true;
@@ -153,7 +187,7 @@ begin
     -- Testcase Sequencer 
     ------------------------------------------------------------------
 	TestcaseSequencer: process
-		variable vDetectionTime : time := (cTrainingsSymbolPosition * cSamplesPerSymbol) * cDataClkPeriod;
+		variable vDetectionTime : time := cTrainingsSymbolPosition * cSamplesPerSymbol * cDataClkPeriod;
 	begin	
 	    -- init uvvm, set log files and enable log messages
         set_log_file_name("CoarseAlignment.txt");
