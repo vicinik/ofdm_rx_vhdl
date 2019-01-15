@@ -19,11 +19,6 @@ entity Interpolation is
         rx_data_q_i         : in signed((sample_bit_width_g - 1) downto 0);
         rx_data_valid_i     : in std_ulogic;
         
-        -- inputs from fine alignment and delay outputs for interpolator
-        interp_mode_i           : in std_ulogic;
-        rx_data_delay_i         : in std_ulogic_vector(3 downto 0);
-        rx_data_offset_i        : in std_ulogic_vector(3 downto 0);
-        
         -- output data to cyclic prefix removal
         rx_data_i_osr_o      : out signed((sample_bit_width_g - 1) downto 0);
         rx_data_q_osr_o      : out signed((sample_bit_width_g - 1) downto 0);
