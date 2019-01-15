@@ -37,32 +37,49 @@ architecture rtl of FftWrapper is
 
 		
 		--SIGNALS
-
+		signal sink_ready : std_logic;
+		signal sink_valid : std_logic;
+		signal sink_error : std_logic_vector(1 downto 0);
+		signal sink_sop : std_logic;
+		signal sink_eop  : std_logic;                          -- endofpacket
+		signal inverse   : std_logic;                             -- data
+		signal sink_imag   :  std_logic_vector(11 downto 0);  -- data
+		signal sink_real    : std_logic_vector(11 downto 0);  -- data
+		signal source_valid : std_logic;                                        -- valid
+		signal source_ready : std_logic;                     -- ready
+		signal source_error : std_logic_vector(1 downto 0);                     -- error
+		signal source_sop   : std_logic;                                        -- startofpacket
+		signal source_eop   : std_logic;                                        -- endofpacket
+		signal source_exp   : std_logic_vector(5 downto 0);                     -- data
+		signal source_imag  : std_logic_vector(11 downto 0);                    -- data
+		signal source_real  : std_logic_vector(11 downto 0);                     -- data
+		
+			
 
 
 begin
 
 
-		FFT : component fft
+		FFTInstance : component fft
 		port map (
 			clk          => sys_clk_i,
 			reset_n      => sys_rstn_i,
-			sink_valid   => 
-			sink_ready   =>
-			sink_error   =>
-			sink_sop     =>
-			sink_eop     =>
-			inverse      =>
-			sink_imag    =>
-			sink_real    =>
-			source_valid =>
-			source_ready =>
-			source_error =>
-			source_sop   =>
-			source_eop   =>
-			source_exp   =>
-			source_imag  =>
-			source_real  =>
+			sink_valid   => sink_valid,
+			sink_ready   => sink_ready,
+			sink_error   => sink_error,
+			sink_sop     => sink_sop,
+			sink_eop     =>sink_eop,
+			inverse      =>inverse,
+			sink_imag    =>sink_imag,
+			sink_real    =>sink_real,
+			source_valid =>source_valid,
+			source_ready =>source_ready,
+			source_error =>source_error,
+			source_sop   =>source_sop,
+			source_eop   =>source_eop,
+			source_exp   =>source_exp,
+			source_imag  =>source_imag,
+			source_real  =>source_real
 		);
 
 
