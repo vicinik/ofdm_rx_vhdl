@@ -30,6 +30,32 @@ architecture Rtl of FineAlignment is
  begin
  
   Combinatorial: process(R, rx_symbols_i_fft_i, rx_symbols_q_fft_i, rx_symbols_fft_valid_i, rx_symbols_fft_start_i) is
+
+    procedure pSumQuadrantValue (
+      constant rx_symbol_i : in signed((sample_bit_width_g - 1) downto 0);
+      constant rx_symbol_q : in signed((sample_bit_width_g - 1) downto 0);
+      constant R : in aFineAlignmentRegSet;
+      signal NxR : out aFineAlignmentRegSet
+    ) is
+    begin
+       -- first quadrant
+      if (rx_symbol_i > 0) and (rx_symbol_q < 0) then
+        NxR.SumReal <= R.SumReal - rx_symbol_i;
+        NxR.SumImag <= R.SumImag + rx_symbol_q;
+      -- third quadrant
+      elsif (rx_symbol_i <= 0) and (rx_symbol_q <= 0) then
+        NxR.SumReal <= R.SumReal - rx_symbol_i;
+        NxR.SumImag <= R.SumImag - rx_symbol_q;
+      -- second quadrant
+      elsif (rx_symbol_i < 0) and (rx_symbol_q > 0) then
+        NxR.SumReal <= R.SumReal + rx_symbol_i;
+        NxR.SumImag <= R.SumImag - rx_symbol_q;
+      else -- first quadrant
+        NxR.SumReal <= R.SumReal + rx_symbol_i;
+        NxR.SumImag <= R.SumImag + rx_symbol_q;
+      end if;
+    end pSumQuadrantValue;
+
   begin  -- process Combinatorial
     NxR <= R;
 
@@ -38,8 +64,7 @@ architecture Rtl of FineAlignment is
       when Init  =>
         if rx_symbols_fft_start_i = '1' and rx_symbols_fft_valid_i = '1' then
           NxR.SymbolCounter <= (others => '0');
-          NxR.SumReal <= resize(rx_symbols_i_fft_i, R.SumReal'length);
-          NxR.SumImag <= resize(rx_symbols_q_fft_i, R.SumREal'length);
+          pSumQuadrantValue(rx_symbols_i_fft_i, rx_symbols_q_fft_i, R, NxR);  
           NxR.State <= Phase;
         end if;
         
@@ -48,23 +73,7 @@ architecture Rtl of FineAlignment is
         if rx_symbols_fft_valid_i = '1' then
           if R.SymbolCounter /= (cSymbolsUsedForPhase - 1) then
             NxR.SymbolCounter <= R.SymbolCounter + to_unsigned(1, NxR.SymbolCounter'length);
-            
-            -- first quadrant
-            if (rx_symbols_i_fft_i > 0) and (rx_symbols_q_fft_i < 0) then
-              NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
-              NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
-            -- third quadrant
-            elsif (rx_symbols_i_fft_i <= 0) and (rx_symbols_q_fft_i <= 0) then
-              NxR.SumReal <= R.SumReal - rx_symbols_i_fft_i;
-              NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
-            -- second quadrant
-            elsif (rx_symbols_i_fft_i < 0) and (rx_symbols_q_fft_i > 0) then
-              NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
-              NxR.SumImag <= R.SumImag - rx_symbols_q_fft_i;
-            else -- first quadrant
-              NxR.SumReal <= R.SumReal + rx_symbols_i_fft_i;
-              NxR.SumImag <= R.SumImag + rx_symbols_q_fft_i;
-            end if;
+            pSumQuadrantValue(rx_symbols_i_fft_i, rx_symbols_q_fft_i, R, NxR);  
           else
             NxR.State <= Init;
           end if;
