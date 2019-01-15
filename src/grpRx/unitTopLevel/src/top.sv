@@ -5,10 +5,10 @@
  *******************************************************************************/
 
 module top;
-	parameter symbol_length_c = 160;
-	parameter raw_symbol_length_c = 128;
+	parameter symbol_length_c = 320;
+	parameter raw_symbol_length_c = 256;
 	parameter sample_bit_width_c = 12;
-	parameter osr_c = 10;
+	parameter osr_c = 5;
 	logic sys_clk = 0, sys_rstn = 1;
 	
 	// Clk generator
