@@ -88,7 +88,10 @@ begin
 					rx_symbols_i_fft_in <= v_ofdm_signal(v_idx).I, (others => '0') after cSysClkPeriod;
 					rx_symbols_q_fft_in <= v_ofdm_signal(v_idx).Q, (others => '0') after cSysClkPeriod;
 					rx_symbols_fft_valid <= '1', '0' after cSysClkPeriod;
-					rx_symbols_fft_start <= '1', '0' after cSysClkPeriod;
+					rx_symbols_fft_start <= '0', '0' after cSysClkPeriod;
+					if v_idx = 1 then
+						rx_symbols_fft_start <= '1', '0' after cSysClkPeriod;
+					end if;
 					wait for cDataClkPeriod;
 					v_idx := v_idx + 1;
 				else
@@ -130,23 +133,13 @@ begin
 		log(ID_LOG_HDR, "Fine tune samples");
 		log(ID_SEQUENCER, "Start OFDM signal transmission");
 		enable_ofdm_signal_generation <= true;	
-			
-		log(ID_LOG_HDR, "Start of symbol and valid generation");
-		await_value(rx_symbols_fft_start, '1', 0 ns, cDataClkPeriod, ERROR, "Start of symbol active");
-		await_value(rx_symbols_fft_start, '0', 0.99 * cSysClkPeriod, 1.01 * cSysClkPeriod, ERROR, "Start of symbol inactive");
-		await_value(rx_symbols_fft_valid, '1', 0 ns, cDataClkPeriod, ERROR, "Data valid active");
-		await_value(rx_symbols_fft_valid, '0', 0.99 * cSysClkPeriod, 1.01 * cSysClkPeriod, ERROR, "Data valid inactive");
-		await_value(rx_symbols_fft_start, '1', 0 ns, cSamplesPerSymbol * cDataClkPeriod, ERROR, "Next start of symbole active");
-			
-		log(ID_LOG_HDR, "Rx output data stream");		
+				
 		for i in 1 to cSamplesPerSymbol loop
 			log(ID_SEQUENCER, "OFDM sample " & integer'image(i));
-			-- TODO ask Flo why this is a problem (following check_values)?
-			-- TODo ask Flo about symbol generation -> start on every sample?
-			--check_value(rx_symbols_valid, rx_symbols_fft_valid ,MATCH_EXACT, ERROR, "Data valid active for sample");
-			--check_value(rx_symbols_start, rx_symbols_fft_start, MATCH_EXACT, ERROR, "Data start active for sample");
-			--check_value(rx_symbols_i_out, rx_symbols_i_fft_in, ERROR, "I component of data");
-			--check_value(rx_symbols_q_out, rx_symbols_q_fft_in, ERROR, "Q component of data");
+			check_value(rx_symbols_valid, rx_symbols_fft_valid ,MATCH_EXACT, ERROR, "Data valid active for sample");
+			check_value(rx_symbols_start, rx_symbols_fft_start, MATCH_EXACT, ERROR, "Data start active for sample");
+			check_value(rx_symbols_i_out, rx_symbols_i_fft_in, ERROR, "I component of data");
+			check_value(rx_symbols_q_out, rx_symbols_q_fft_in, ERROR, "Q component of data");
 
 			if i = 32 then -- check after 32 samples if phase is kept until next symbol
 				check_value(offset_inc, '1', MATCH_EXACT, ERROR, "Offset increment");
@@ -159,7 +152,6 @@ begin
 				wait for cDataClkPeriod;
 			end if;
 		end loop;
-		await_value(rx_symbols_fft_start, '1', 0 ns, 1.01*cDataClkPeriod, ERROR, "Start of symbol active at next sample");
 
 		log(ID_LOG_HDR, "Check init condition");
 		init <= '1';
