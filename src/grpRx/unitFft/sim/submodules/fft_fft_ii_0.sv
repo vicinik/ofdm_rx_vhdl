@@ -35,7 +35,7 @@ module fft_fft_ii_0 (
 
 	asj_fft_si_se_so_bb #(
 		.device_family("Cyclone V"),
-		.nps(128),
+		.nps(256),
 		.bfp(1),
 		.nume(1),
 		.mpr(12),
@@ -49,12 +49,12 @@ module fft_fft_ii_0 (
 		.mult_imp(0),
 		.dsp_arch(2),
 		.srr("AUTO_SHIFT_REGISTER_RECOGNITION=OFF"),
-		.rfs1("fft_fft_ii_0_1n128sin.hex"),
-		.rfs2("fft_fft_ii_0_2n128sin.hex"),
-		.rfs3("fft_fft_ii_0_3n128sin.hex"),
-		.rfc1("fft_fft_ii_0_1n128cos.hex"),
-		.rfc2("fft_fft_ii_0_2n128cos.hex"),
-		.rfc3("fft_fft_ii_0_3n128cos.hex")
+		.rfs1("fft_fft_ii_0_1n256sin.hex"),
+		.rfs2("fft_fft_ii_0_2n256sin.hex"),
+		.rfs3("fft_fft_ii_0_3n256sin.hex"),
+		.rfc1("fft_fft_ii_0_1n256cos.hex"),
+		.rfc2("fft_fft_ii_0_2n256cos.hex"),
+		.rfc3("fft_fft_ii_0_3n256cos.hex")
 	)
 	asj_fft_si_se_so_bb_inst (
 		.clk(clk),

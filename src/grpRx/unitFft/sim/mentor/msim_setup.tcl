@@ -40,7 +40,6 @@
 # # the simulator.
 # #
 # set QSYS_SIMDIR <script generation output directory>
-# set QSYS_SIMDIR ./
 # #
 # # Source the generated IP simulation script.
 # source $QSYS_SIMDIR/mentor/msim_setup.tcl
@@ -95,7 +94,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 18.0 614 win32 2019.01.13.21:04:53
+# ACDS 18.0 614 win32 2019.01.15.22:00:03
 
 # ----------------------------------------
 # Initialize variables
@@ -106,7 +105,7 @@ if ![info exists SYSTEM_INSTANCE_NAME] {
 }
 
 if ![info exists TOP_LEVEL_NAME] { 
-  set TOP_LEVEL_NAME "TbFFT"
+  set TOP_LEVEL_NAME "fft"
 }
 
 if ![info exists QSYS_SIMDIR] { 
@@ -142,12 +141,12 @@ if ![ string match "*-64 vsim*" [ vsim -version ] ] {
 # Copy ROM/RAM files to simulation directory
 alias file_copy {
   echo "\[exec\] file_copy"
-  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_1n128cos.hex ./
-  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_2n128cos.hex ./
-  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_1n128sin.hex ./
-  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_2n128sin.hex ./
-  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_3n128cos.hex ./
-  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_3n128sin.hex ./
+  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_3n256cos.hex ./
+  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_2n256sin.hex ./
+  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_3n256sin.hex ./
+  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_1n256cos.hex ./
+  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_2n256cos.hex ./
+  file copy -force $QSYS_SIMDIR/submodules/fft_fft_ii_0_1n256sin.hex ./
 }
 
 # ----------------------------------------
@@ -326,12 +325,21 @@ alias com {
   eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/submodules/mentor/twid_rom.vhd"                                -work fft_ii_0      
   eval  vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS     "$QSYS_SIMDIR/submodules/mentor/apn_fft_mult_cpx_1825.v"                     -work fft_ii_0      
   eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/submodules/fft_fft_ii_0.sv"                                    -work fft_ii_0      
+    eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/log_dualis-p.vhd"                             
   eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/fft.vhd"                       
   eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/fft_wrapper-e.vhd"                                                                           
   eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/fft_wrapper-a.vhd"                                                                           
   eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/tbImpl_ea.vhd"                                                                                                                               
 }
 
+alias com_wrapper {
+  echo "\[exec\] com_wrapper"
+  eval  vcom -check_synthesis $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/log_dualis-p.vhd"                             
+  eval  vcom -check_synthesis $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/fft.vhd"                       
+  eval  vcom -check_synthesis $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/fft_wrapper-e.vhd"                                                                           
+  eval  vcom -check_synthesis $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/../src/fft_wrapper-a.vhd"                                                                           
+  eval  vcom -check_synthesis $USER_DEFINED_COMPILE_OPTIONS        "$QSYS_SIMDIR/tbImpl_ea.vhd"                                                                                                                               
+}
 # ----------------------------------------
 # Elaborate top level design
 alias elab {

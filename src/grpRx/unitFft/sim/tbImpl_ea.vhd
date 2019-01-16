@@ -47,7 +47,40 @@ constant cSysClkPeriod : time := 10 ns; -- 100 MHz
         rx_symbols_fft_start_o    => rx_symbols_fft_start_o
 		);
 
-		sys_clk_i <= not sys_clk_i after cSysClkPeriod;
+		sys_clk_i <= not sys_clk_i after cSysClkPeriod/2;
 
+		test: process is
+			
+		begin
+
+			sys_rstn_i <= '0';
+			wait for 1 us;
+			sys_rstn_i <= '1';
+
+			for m in 1 to 100 loop
+
+				rx_data_fft_start_i <= '1';
+				rx_data_fft_valid_i <= '1';
+				rx_data_i_fft_i    <= (others => '0');
+				rx_data_q_fft_i    <= (others => '0');
+				wait for cSysClkPeriod;
+				rx_data_fft_start_i <= '0';
+				for i in 1 to 254 loop
+					rx_data_i_fft_i    <= to_signed(i, rx_data_i_fft_i'length);
+					rx_data_q_fft_i    <= to_signed(i, rx_data_q_fft_i'length);
+					wait for cSysClkPeriod;
+				end loop;
+				rx_data_i_fft_i    <= to_signed(255, rx_data_i_fft_i'length);
+				rx_data_q_fft_i    <= to_signed(255, rx_data_q_fft_i'length);
+				rx_data_fft_valid_i <= '0';
+
+				wait for 5 us;
+
+
+			end loop;
+			
+			
+			wait;
+		end process test;
 
 end architecture bhv; -- of FftWrapper

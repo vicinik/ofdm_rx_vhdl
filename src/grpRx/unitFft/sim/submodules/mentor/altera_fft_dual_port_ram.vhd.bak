@@ -151,7 +151,7 @@ s10_ram_gen : if not USE_OLD_RAM and selected_device_family = "Stratix 10" gener
       numwords_a                         => numwords,
       numwords_b                         => numwords,
       operation_mode                     => "DUAL_PORT",
-     -- outdata_sclr_b                     => "SCLEAR",
+      --outdata_sclr_b                     => "SCLEAR",
       outdata_reg_b                      => "CLOCK0",
       power_up_uninitialized             => "FALSE",
       ram_block_type                     => ram_block_type,
@@ -164,7 +164,7 @@ s10_ram_gen : if not USE_OLD_RAM and selected_device_family = "Stratix 10" gener
       )
     port map (
       clocken0  => clocken0,
-      sclr      => aclr0,
+      --sclr      => aclr0,
       wren_a    => wren_a,
       rden_b    => rden_b,
       clock0    => clock0,

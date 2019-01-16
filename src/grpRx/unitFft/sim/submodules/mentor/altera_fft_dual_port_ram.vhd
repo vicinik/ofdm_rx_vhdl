@@ -143,7 +143,7 @@ end generate new_ram_gen;
 s10_ram_gen : if not USE_OLD_RAM and selected_device_family = "Stratix 10" generate
     s10_ram_component : altera_syncram
     generic map (
-      --address_aclr_b                     => "CLEAR0",
+      address_aclr_b                     => "CLEAR0",
       address_reg_b                      => "CLOCK0",
       rdcontrol_reg_b                    => "CLOCK0",
       intended_device_family             => selected_device_family,
@@ -151,7 +151,7 @@ s10_ram_gen : if not USE_OLD_RAM and selected_device_family = "Stratix 10" gener
       numwords_a                         => numwords,
       numwords_b                         => numwords,
       operation_mode                     => "DUAL_PORT",
-     -- outdata_sclr_b                     => "SCLEAR",
+      --outdata_sclr_b                     => "SCLEAR",
       outdata_reg_b                      => "CLOCK0",
       power_up_uninitialized             => "FALSE",
       ram_block_type                     => ram_block_type,

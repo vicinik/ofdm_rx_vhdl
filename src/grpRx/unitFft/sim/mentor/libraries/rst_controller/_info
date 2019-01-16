@@ -9,42 +9,42 @@ z2
 cModel Technology
 Z0 dD:/Alexander/FH/ESD/3_Semester/OSP/ofdm_rx_vhdl/src/grpRx/unitFft/sim/mentor
 valtera_reset_controller
-!s110 1547504948
+Z1 !s110 1547589707
 !i10b 1
 !s100 VEhLaE^KT@RiagZkfkKI93
 I<34=A@SX@Q__4G?C]Ch^;2
-Z1 V`JN@9S9cnhjKRR_L]QIcM3
+Z2 V`JN@9S9cnhjKRR_L]QIcM3
 R0
-Z2 w1547409891
+Z3 w1547586002
 8./../submodules/altera_reset_controller.v
 F./../submodules/altera_reset_controller.v
 L0 42
-Z3 OV;L;10.3d;59
+Z4 OV;L;10.3d;59
 r1
 !s85 0
 31
-!s108 1547504948.806000
+!s108 1547589706.969000
 !s107 ./../submodules/altera_reset_controller.v|
 !s90 -reportprogress|300|./../submodules/altera_reset_controller.v|-work|rst_controller|
 !i113 1
-Z4 o-work rst_controller
+Z5 o-work rst_controller
 valtera_reset_synchronizer
-!s110 1547504949
+R1
 !i10b 1
 !s100 UTD:?4E=?>;X@do<;V;hQ1
 INgPnYbfRPN1:]:E1Yc`bI2
-R1
-R0
 R2
+R0
+R3
 8./../submodules/altera_reset_synchronizer.v
 F./../submodules/altera_reset_synchronizer.v
 L0 24
-R3
+R4
 r1
 !s85 0
 31
-!s108 1547504949.024000
+!s108 1547589707.251000
 !s107 ./../submodules/altera_reset_synchronizer.v|
 !s90 -reportprogress|300|./../submodules/altera_reset_synchronizer.v|-work|rst_controller|
 !i113 1
-R4
+R5
