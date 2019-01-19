@@ -24,3 +24,16 @@ src/grpRx/unitFineAlignment/sim/work/
 src/grpRx/unitFineAlignment/sim/FineAlignment\.txt
 
 src/grpRx/unitFineAlignment/sim/vsim\.wlf
+
+
+src/grpRx/unitInterpolation/simModelsim/work/
+
+src/grpRx/unitInterpolation/simModelsim/transcript
+
+src/grpRx/unitInterpolation/simModelsim/modelsim\.ini
+
+src/grpRx/unitInterpolation/simModelsim/ModelSim\.lnk
+
+src/grpRx/unitInterpolation/simModelsim/tbImpl_ea\.vhd\.bak
+
+src/grpRx/unitInterpolation/simModelsim/vsim\.wlf
