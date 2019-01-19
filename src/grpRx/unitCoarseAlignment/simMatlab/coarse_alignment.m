@@ -5,7 +5,7 @@ global k;
 %% settings
 storeToFile = true;
 upsampling = true;
-NumberIterations = 5;
+NumberIterations = 100;
 TrainingsSymbolPosition = 2;
 
 NumberOfSubcarrier = 128;
