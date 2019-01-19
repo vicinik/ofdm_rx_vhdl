@@ -31,9 +31,6 @@ architecture Bhv of tbInterpolation is
 	signal rx_data_q_in : signed(11 downto 0) := (others => '0');
 	signal rx_data_in_valid : std_ulogic := '0';
 	
-	signal interp_mode : std_ulogic := '0';
-	signal delay : std_ulogic_vector(3 downto 0) := "1111";
-	signal offset : std_ulogic_vector(3 downto 0) := "1111";
 	signal rx_data_i_out : signed(11 downto 0) := (others => '0');
 	signal rx_data_q_out : signed(11 downto 0) := (others => '0');
 	signal rx_data_out_valid : std_ulogic := '0';
@@ -57,11 +54,6 @@ begin
 			rx_data_i_i      =>  rx_data_i_in, 
 			rx_data_q_i      =>  rx_data_q_in,
 			rx_data_valid_i  =>  rx_data_in_valid,
-        
-			-- inputs from fine alignment and delay outputs for interpolator
-			interp_mode_i      =>  interp_mode, 
-			rx_data_delay_i    =>  delay, 
-			rx_data_offset_i   =>  offset,
 			  
 			-- output data to cyclic prefix removal
 			rx_data_i_osr_o       =>	rx_data_i_out,
@@ -179,7 +171,6 @@ begin
 		rx_data_i_in <= to_signed(1900, rx_data_i_in'length);
 		rx_data_q_in <= to_signed(1900, rx_data_q_in'length);
 		rx_data_in_valid  <= '1';
-		interp_mode <= '1';
 		wait for cSysClkPeriod;
 		rx_data_in_valid  <= '0';
 

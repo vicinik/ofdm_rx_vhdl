@@ -7,7 +7,7 @@ architecture Rtl of Interpolation is
 	-- 						TYPES 							--
 	----------------------------------------------------------
 
-	type aState is (Init, WaitSample2, WaitSample3, CalcDerived, UpSampling, CalcSample, Done);
+	type aState is (Init, WaitSample2, WaitSample3, CalcDerived, UpSampling, Done);
 
 	type aComplexSample is record
 		I : signed(sample_bit_width_g - 1 downto 0);	
@@ -33,12 +33,9 @@ architecture Rtl of Interpolation is
 		State : aState;
 		Derives : aDerives;
 		Data : aData;
-		--Delay : unsigned(3 downto 0);
-		--Offset : unsigned(3 downto 0);
 		Result : aComplexSample;
 		Count : unsigned((osr_g - 1) downto 0);
 		Valid : std_ulogic;
-		Mode : std_ulogic;
 	end record;
 
 	----------------------------------------------------------
@@ -51,8 +48,7 @@ architecture Rtl of Interpolation is
 		Data => (others => (others => (others => '0'))),
 		Result => (others => (others => '0')),
 		Count => "0000",
-		Valid => '0',
-		Mode => '0'
+		Valid => '0'
 	);
 
 	----------------------------------------------------------
@@ -78,7 +74,7 @@ begin
 	end if;
   end process;
 
-	fsm: process (Reg, rx_data_valid_i, rx_data_q_i, rx_data_i_i, interp_mode_i, rx_data_delay_i, rx_data_offset_i)
+	fsm: process (Reg, rx_data_valid_i, rx_data_q_i, rx_data_i_i)
 	begin
 		NxrReg <= Reg;	   
 
@@ -120,11 +116,8 @@ begin
 				NxrReg.Derives.I_ii <= Add32(Sub32(Reg.Data.x0.Q,2*Reg.Data.x1.Q),Reg.Data.x2.Q)/((2**osr_g)*(2**osr_g)); -- zweite Ableitung real
 				NxrReg.Derives.Q_ii <= Add32(Sub32(Reg.Data.x0.Q,2*Reg.Data.x1.Q),Reg.Data.x2.Q)/((2**osr_g)*(2**osr_g)); -- zweite Ableitung imag
 
-				if Reg.Mode = '0' then -- OversamplingRate necessary
-					NxrReg.State <= Upsampling;
-				else -- no oversampling necessary, because alignment has been done yet
-					NxrReg.State <= CalcSample;
-				end if;
+
+				NxrReg.State <= Upsampling;
 
 
 
@@ -143,14 +136,6 @@ begin
 					NxrReg.Count <= Reg.Count + 1;
 
 
-			when CalcSample => -- Outputs only one Sample with XY Delay From FineAlignment
-
-					NxrReg.Result.Q <= GetSample(unsigned(rx_data_offset_i),osr_g,sample_bit_width_g,Reg.Derives.Q,Reg.Derives.Q_i,Reg.Derives.Q_ii);
-					NxrReg.Result.I <= GetSample(unsigned(rx_data_offset_i),osr_g,sample_bit_width_g,Reg.Derives.I,Reg.Derives.I_i,Reg.Derives.I_ii);
-
-					NxrReg.Valid <= '1';
-					NxrReg.State <= Done;
-
 			when Done =>
 				if rx_data_valid_i = '1' then
 					NxrReg.Data.x0.Q <= rx_data_q_i;
@@ -158,7 +143,6 @@ begin
 					NxrReg.Data.x1 <= Reg.Data.x0;
 					NxrReg.Data.x2 <= Reg.Data.x1;
 					NxrReg.State <= CalcDerived;
-					NxrReg.Mode <= interp_mode_i;
 				end if;	
 
 				NxrReg.Count <= (others => '0');
