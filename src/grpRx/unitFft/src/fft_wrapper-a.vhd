@@ -4,6 +4,8 @@
 
 library IEEE;
 library work;
+
+use work.LogDualisPack.all; 
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 use work.LogDualisPack.all;
@@ -12,7 +14,7 @@ architecture rtl of FftWrapper is
 	
 		constant cBufferLength : natural := raw_symbol_length_g*3;
 		constant FFTLength : natural := raw_symbol_length_g*2;
-
+		constant cNumberSymbols : natural := LogDualis(raw_symbol_length_g*2);
 
 		-- Components FFT
 		component fft is
@@ -175,7 +177,8 @@ begin
 	end process;
 	
 
-	FSM: process(Reg,rx_data_fft_valid_i, rx_data_i_fft_i,rx_data_q_fft_i,sink_ready, source_imag, source_real,source_valid,source_sop) is
+	FSM: process(Reg,rx_data_fft_valid_i, rx_data_i_fft_i,rx_data_q_fft_i,sink_ready, source_imag, source_real,source_valid,source_sop, source_exp) is
+		variable exp : natural := 0;
 	begin
 
 		NxrReg <= Reg;
@@ -246,9 +249,11 @@ begin
 		if source_valid = '1' then
 			NxrReg.REsultCounter <= Reg.ResultCounter + 1;
 
-			if Reg.ResultCounter < 64 or Reg.ResultCounter > 193 then
-				NXrReg.Result.Q <= signed(source_imag);
-				NXrReg.Result.I <= signed(source_real);
+			if Reg.ResultCounter < 64 or Reg.ResultCounter >= 192 then
+
+				exp := fft_exp_g - to_integer(signed(source_exp)) - cNumberSymbols ;
+				NXrReg.Result.Q <= shift_left(signed(source_imag),exp);
+				NXrReg.Result.I <= shift_left(signed(source_real),exp);
 				NxrReg.resultvalid     <= source_valid;
 				NxrReg.resultstart     <= source_sop;
 			end if;

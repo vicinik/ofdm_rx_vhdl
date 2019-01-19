@@ -7,7 +7,7 @@ add wave -noupdate /tbfft/rx_data_i_fft_i
 add wave -noupdate /tbfft/DUV/FFTInstance/sink_imag
 add wave -noupdate /tbfft/DUV/FFTInstance/sink_real
 add wave -noupdate -divider Register
-add wave -noupdate -childformat {{/tbfft/DUV/Reg.SampleCounter -radix unsigned} {/tbfft/DUV/Reg.TransferCounter -radix unsigned}} -subitemconfig {/tbfft/DUV/Reg.SampleCounter {-color yellow -height 15 -itemcolor yellow -radix unsigned} /tbfft/DUV/Reg.TransferCounter {-height 15 -radix unsigned}} /tbfft/DUV/Reg
+add wave -noupdate -childformat {{/tbfft/DUV/Reg.SampleCounter -radix unsigned} {/tbfft/DUV/Reg.TransferCounter -radix unsigned} {/tbfft/DUV/Reg.ResultCounter -radix unsigned}} -subitemconfig {/tbfft/DUV/Reg.SampleCounter {-color yellow -height 15 -itemcolor yellow -radix unsigned} /tbfft/DUV/Reg.TransferCounter {-height 15 -radix unsigned} /tbfft/DUV/Reg.ResultCounter {-height 15 -radix unsigned}} /tbfft/DUV/Reg
 add wave -noupdate /tbfft/DUV/NxrReg
 add wave -noupdate -divider Sink
 add wave -noupdate /tbfft/DUV/sink_ready
@@ -21,16 +21,20 @@ add wave -noupdate /tbfft/DUV/source_ready
 add wave -noupdate -color magenta -itemcolor magenta /tbfft/DUV/source_valid
 add wave -noupdate -color gold -itemcolor gold /tbfft/DUV/source_sop
 add wave -noupdate /tbfft/DUV/source_eop
-add wave -noupdate /tbfft/DUV/source_exp
-add wave -noupdate /tbfft/DUV/source_imag
-add wave -noupdate /tbfft/DUV/source_real
+add wave -noupdate -radix decimal /tbfft/DUV/source_exp
+add wave -noupdate -radix decimal /tbfft/DUV/source_imag
+add wave -noupdate -radix decimal /tbfft/DUV/source_real
 add wave -noupdate -divider Output
-add wave -noupdate -color {Medium Spring Green} -itemcolor {Medium Spring Green} /tbfft/DUV/rx_symbols_i_fft_o
-add wave -noupdate -color {Medium Spring Green} -itemcolor {Medium Spring Green} /tbfft/DUV/rx_symbols_q_fft_o
+add wave -noupdate -color {Medium Spring Green} -itemcolor {Medium Spring Green} -radix decimal /tbfft/DUV/rx_symbols_i_fft_o
+add wave -noupdate -color {Medium Spring Green} -itemcolor {Medium Spring Green} -radix decimal /tbfft/DUV/rx_symbols_q_fft_o
 add wave -noupdate /tbfft/DUV/rx_symbols_fft_valid_o
 add wave -noupdate /tbfft/DUV/rx_symbols_fft_start_o
+add wave -noupdate -divider Locals
+add wave -noupdate /tbfft/DUV/fft_exp_g
+add wave -noupdate /tbfft/DUV/cNumberSymbols
+add wave -noupdate -radix decimal /tbfft/DUV/FSM/exp
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {76322074 ps} 0}
+WaveRestoreCursors {{Cursor 1} {6300652 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 225
 configure wave -valuecolwidth 145
@@ -46,4 +50,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {57108480 ps} {95180800 ps}
+WaveRestoreZoom {5865382 ps} {6664618 ps}
