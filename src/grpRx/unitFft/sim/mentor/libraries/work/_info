@@ -1,0 +1,174 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dD:/Alexander/FH/ESD/3_Semester/OSP/ofdm_rx_vhdl/src/grpRx/unitFft/sim/mentor
+Efft
+Z1 w1547910428
+Z2 DPx4 ieee 11 numeric_std 0 22 :ASDNFgHXf_ih3J@9F3Ze1
+Z3 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z4 DPx4 ieee 14 std_logic_1164 0 22 eNV`TJ_GofJTzYa?f<@Oe1
+R0
+Z5 8./../../src/fft.vhd
+Z6 F./../../src/fft.vhd
+l0
+L9
+Ve<CR4eZJoI1Sn41zlT]OX0
+!s100 g^o=K6Qj_Y5RR_B_]LJAg2
+Z7 OV;C;10.3d;59
+32
+Z8 !s110 1547910709
+!i10b 1
+Z9 !s108 1547910709.446000
+Z10 !s90 -reportprogress|300|-check_synthesis|./../../src/fft.vhd|
+Z11 !s107 ./../../src/fft.vhd|
+!i113 1
+Z12 o-check_synthesis
+Z13 tExplicit 1
+Artl
+R2
+R3
+R4
+DEx4 work 3 fft 0 22 e<CR4eZJoI1Sn41zlT]OX0
+l132
+L32
+VEf60;MjzGA;QcA3FlAB892
+!s100 `hOfed[WX]:9;lWADeW>K0
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 1
+R12
+R13
+Efftwrapper
+R1
+R2
+R3
+R4
+R0
+8./../../src/fft_wrapper-e.vhd
+F./../../src/fft_wrapper-e.vhd
+l0
+L5
+VSAdk`nQGR>Z2lR_][M^jc0
+!s100 LL7;1UdP[;z7`3iMncfAk0
+R7
+32
+Z14 !s110 1547910710
+!i10b 1
+!s108 1547910710.053000
+!s90 -reportprogress|300|-check_synthesis|./../../src/fft_wrapper-e.vhd|
+!s107 ./../../src/fft_wrapper-e.vhd|
+!i113 1
+R12
+R13
+Artl
+Z15 DEx4 work 10 fftwrapper 0 22 SAdk`nQGR>Z2lR_][M^jc0
+R2
+R3
+R4
+Z16 DPx4 work 13 logdualispack 0 22 FhUV=P1[X7HiF<PQ9;1jV3
+8./../../src/fft_wrapper-a.vhd
+F./../../src/fft_wrapper-a.vhd
+l116
+L13
+V0A1hkVQ:XdCadE`<c=mIA1
+!s100 BC=VbM@OHlMj@QH3[L2U_1
+R7
+32
+R14
+!i10b 1
+!s108 1547910710.156000
+!s90 -reportprogress|300|-check_synthesis|./../../src/fft_wrapper-a.vhd|
+!s107 ./../../src/fft_wrapper-a.vhd|
+!i113 1
+R12
+R13
+Plogdualispack
+R1
+R0
+Z17 8./../../src/log_dualis-p.vhd
+Z18 F./../../src/log_dualis-p.vhd
+l0
+L1
+VFhUV=P1[X7HiF<PQ9;1jV3
+!s100 L7Kk8hZZASXcg5NJgnRPI1
+R7
+32
+b1
+R8
+!i10b 1
+Z19 !s108 1547910709.340000
+Z20 !s90 -reportprogress|300|-check_synthesis|./../../src/log_dualis-p.vhd|
+Z21 !s107 ./../../src/log_dualis-p.vhd|
+!i113 1
+R12
+R13
+Bbody
+R16
+l0
+L5
+V`Z>Mz^Ne3DS@h]]0DgbMn0
+!s100 Bln41RlizX]MZ[WSX>RT=0
+R7
+32
+R8
+!i10b 1
+R19
+R20
+R21
+!i113 1
+R12
+R13
+nbody
+Etbfft
+R1
+R2
+R3
+R4
+R0
+Z22 8./../tbImpl_ea.vhd
+Z23 F./../tbImpl_ea.vhd
+l0
+L5
+VLiZn7m<J^T2417THE=OgU3
+!s100 o0U5Db8UAMI[QLJNN0z0m0
+R7
+32
+R14
+!i10b 1
+Z24 !s108 1547910710.764000
+Z25 !s90 -reportprogress|300|-check_synthesis|./../tbImpl_ea.vhd|
+Z26 !s107 ./../tbImpl_ea.vhd|
+!i113 1
+R12
+R13
+Abhv
+R15
+R2
+R3
+R4
+DEx4 work 5 tbfft 0 22 LiZn7m<J^T2417THE=OgU3
+l31
+L10
+Vf<]GP^8CVU_38QGKdK=cg0
+Z27 !s100 NiDKV45g;LMglzcnclX>a1
+R7
+32
+R14
+!i10b 1
+R24
+R25
+R26
+!i113 1
+R12
+R13

@@ -1,0 +1,50 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dD:/Alexander/FH/ESD/3_Semester/OSP/ofdm_rx_vhdl/src/grpRx/unitFft/sim/mentor
+valtera_reset_controller
+Z1 !s110 1547910599
+!i10b 1
+!s100 VEhLaE^KT@RiagZkfkKI93
+I<34=A@SX@Q__4G?C]Ch^;2
+Z2 V`JN@9S9cnhjKRR_L]QIcM3
+R0
+Z3 w1547910427
+8./../submodules/altera_reset_controller.v
+F./../submodules/altera_reset_controller.v
+L0 42
+Z4 OV;L;10.3d;59
+r1
+!s85 0
+31
+!s108 1547910598.640000
+!s107 ./../submodules/altera_reset_controller.v|
+!s90 -reportprogress|300|./../submodules/altera_reset_controller.v|-work|rst_controller|
+!i113 1
+Z5 o-work rst_controller
+valtera_reset_synchronizer
+R1
+!i10b 1
+!s100 UTD:?4E=?>;X@do<;V;hQ1
+INgPnYbfRPN1:]:E1Yc`bI2
+R2
+R0
+R3
+8./../submodules/altera_reset_synchronizer.v
+F./../submodules/altera_reset_synchronizer.v
+L0 24
+R4
+r1
+!s85 0
+31
+!s108 1547910599.231000
+!s107 ./../submodules/altera_reset_synchronizer.v|
+!s90 -reportprogress|300|./../submodules/altera_reset_synchronizer.v|-work|rst_controller|
+!i113 1
+R5
