@@ -43,6 +43,11 @@ class Verification;
 		$display("[%10t] INFO    : %s", $realtime, message);
 	endfunction
 
+	function void printWarning(string message);
+		check(0, Warning);
+		$display("[%10t] WARNING : %s", $realtime, message);
+	endfunction
+
 	function void printError(string message);
 		check(0, Error);
 		$display("[%10t] ERROR   : %s", $realtime, message);

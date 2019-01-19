@@ -5,7 +5,8 @@ use ieee.numeric_std.all;
 entity FftWrapper is
     generic (
         raw_symbol_length_g : natural := 128;
-        sample_bit_width_g  : natural := 12
+        sample_bit_width_g  : natural := 12;
+		fft_exp_g			: natural := 9
     );
     port(
         -- clock, async reset and init signal

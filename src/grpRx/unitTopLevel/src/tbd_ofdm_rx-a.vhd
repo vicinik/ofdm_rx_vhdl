@@ -1,8 +1,5 @@
 architecture Rtl of TbdOfdmRx is
     -- interpolation connection signals
-    signal interp_mode_v       : std_ulogic := '0';
-    signal rx_data_delay_v     : std_ulogic_vector(3 downto 0) := (others => '0');
-    signal rx_data_offset_v    : std_ulogic_vector(3 downto 0) := (others => '0');
     signal rx_data_i_osr_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
     signal rx_data_q_osr_v     : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
     signal rx_data_osr_valid_v : std_ulogic := '0';
@@ -43,9 +40,6 @@ begin
             rx_data_i_i          => rx_data_i_i,
             rx_data_q_i          => rx_data_q_i,
             rx_data_valid_i      => rx_data_valid_i,
-            interp_mode_i        => interp_mode_v,
-            rx_data_delay_i      => rx_data_delay_v,
-            rx_data_offset_i     => rx_data_offset_v,
             rx_data_i_osr_o      => rx_data_i_osr_v,
             rx_data_q_osr_o      => rx_data_q_osr_v,
             rx_data_osr_valid_o  => rx_data_osr_valid_v
@@ -67,9 +61,6 @@ begin
             rx_data_osr_valid_i     => rx_data_osr_valid_v,
             offset_inc_i            => offset_inc_v,
             offset_dec_i            => offset_dec_v,
-            interp_mode_o           => interp_mode_v,
-            rx_data_delay_o         => rx_data_delay_v,
-            rx_data_offset_o        => rx_data_offset_v,
             min_level_i             => min_level_i,
             rx_data_i_coarse_o      => rx_data_i_coarse_v,
             rx_data_q_coarse_o      => rx_data_q_coarse_v,

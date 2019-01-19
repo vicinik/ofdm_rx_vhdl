@@ -1,0 +1,152 @@
+# Reading D:/ModelSim/Quartus/modelsim_ase/tcl/vsim/pref.tcl
+do do_all.do
+# Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+# Start time: 19:05:14 on Jan 13,2019
+# vcom -reportprogress 300 -check_synthesis -work work ../src/Upsampling-p.vhd 
+# ** Error: (vcom-19) Failed to access library 'work' at "work".
+# 
+# No such file or directory. (errno = ENOENT)
+# End time: 19:05:14 on Jan 13,2019, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+# ** Error: D:/ModelSim/Quartus/modelsim_ase/win32aloem/vcom failed.
+# Error in macro ./compile.do line 14
+# D:/ModelSim/Quartus/modelsim_ase/win32aloem/vcom failed.
+#     while executing
+# "vcom -check_synthesis -work work ../src/Upsampling-p.vhd"
+do do_all.do
+# Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+# Start time: 19:05:25 on Jan 13,2019
+# vcom -reportprogress 300 -check_synthesis -work work ../src/Upsampling-p.vhd 
+# ** Error: (vcom-19) Failed to access library 'work' at "work".
+# 
+# No such file or directory. (errno = ENOENT)
+# End time: 19:05:25 on Jan 13,2019, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+# ** Error: D:/ModelSim/Quartus/modelsim_ase/win32aloem/vcom failed.
+# Error in macro ./compile.do line 14
+# D:/ModelSim/Quartus/modelsim_ase/win32aloem/vcom failed.
+#     while executing
+# "vcom -check_synthesis -work work ../src/Upsampling-p.vhd"
+do do_all.do
+# Delete library work
+# ** Error: (vdel-19) Failed to access library 'work' at "work".
+# 
+# No such file or directory. (errno = ENOENT)
+# ** Warning: (vdel-57) Library 'work' is missing or is not a valid ModelSim library.
+# 
+# ** Error: D:/ModelSim/Quartus/modelsim_ase/win32aloem/vdel failed.
+# Error in macro ./clean.do line 17
+# D:/ModelSim/Quartus/modelsim_ase/win32aloem/vdel failed.
+#     while executing
+# "error [FixExecError $msg]"
+#     (procedure "vdel" line 6)
+#     invoked from within
+# "vdel -all -lib work"
+#     invoked from within
+# "if {[file exists work] == 1} {
+# 	echo "Delete library work"
+# 	vdel -all -lib work
+# }"
+do do_all.do
+# Delete library work
+# ** Error: (vdel-19) Failed to access library 'work' at "work".
+# 
+# No such file or directory. (errno = ENOENT)
+# ** Warning: (vdel-57) Library 'work' is missing or is not a valid ModelSim library.
+# 
+# ** Error: D:/ModelSim/Quartus/modelsim_ase/win32aloem/vdel failed.
+# Error in macro ./clean.do line 17
+# D:/ModelSim/Quartus/modelsim_ase/win32aloem/vdel failed.
+#     while executing
+# "error [FixExecError $msg]"
+#     (procedure "vdel" line 6)
+#     invoked from within
+# "vdel -all -lib work"
+#     invoked from within
+# "if {[file exists work] == 1} {
+# 	echo "Delete library work"
+# 	vdel -all -lib work
+# }"
+vlib work
+# ** Error: (vlib-35) Failed to create directory "work".
+# 
+# File exists. (errno = EEXIST)
+do do_all.do
+# Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+# Start time: 19:06:24 on Jan 13,2019
+# vcom -reportprogress 300 -check_synthesis -work work ../src/Upsampling-p.vhd 
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Loading package std_logic_arith
+# -- Loading package STD_LOGIC_UNSIGNED
+# -- Loading package STD_LOGIC_SIGNED
+# -- Compiling package UpSampling
+# -- Compiling package body UpSampling
+# -- Loading package UpSampling
+# End time: 19:06:24 on Jan 13,2019, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+# Start time: 19:06:24 on Jan 13,2019
+# vcom -reportprogress 300 -check_synthesis -work work ../src/interpolation-e.vhd 
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Loading package std_logic_arith
+# -- Loading package STD_LOGIC_UNSIGNED
+# -- Loading package STD_LOGIC_SIGNED
+# -- Compiling entity Interpolation
+# End time: 19:06:24 on Jan 13,2019, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+# Start time: 19:06:24 on Jan 13,2019
+# vcom -reportprogress 300 -check_synthesis -work work ../src/interpolation-a.vhd 
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Loading package std_logic_arith
+# -- Loading package STD_LOGIC_UNSIGNED
+# -- Loading package STD_LOGIC_SIGNED
+# -- Loading package UpSampling
+# -- Compiling architecture Rtl of Interpolation
+# -- Loading entity Interpolation
+# ** Warning: ../src/interpolation-a.vhd(81): (vcom-1401) Synthesis Warning: Signal "rx_data_delay_i" is in the sensitivity list but is not read in the process.
+# 
+# End time: 19:06:25 on Jan 13,2019, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+# Start time: 19:06:25 on Jan 13,2019
+# vcom -reportprogress 300 -2008 -work work tbImpl_ea.vhd 
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Loading package ENV
+# -- Compiling entity tbInterpolation
+# -- Compiling architecture Bhv of tbInterpolation
+# -- Loading package std_logic_arith
+# -- Loading package STD_LOGIC_UNSIGNED
+# -- Loading package STD_LOGIC_SIGNED
+# -- Loading entity Interpolation
+# End time: 19:06:25 on Jan 13,2019, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -gui 
+# Start time: 19:06:25 on Jan 13,2019
+# Loading std.standard
+# Loading std.textio(body)
+# Loading ieee.std_logic_1164(body)
+# Loading ieee.numeric_std(body)
+# Loading std.env(body)
+# Loading ieee.std_logic_arith(body)
+# Loading ieee.std_logic_unsigned(body)
+# Loading ieee.std_logic_signed(body)
+# Loading work.tbinterpolation(bhv)
+# Loading work.upsampling(body)
+# Loading work.interpolation(rtl)
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 0  Instance: /tbinterpolation
+# End time: 19:08:22 on Jan 13,2019, Elapsed time: 0:01:57
+# Errors: 0, Warnings: 1
