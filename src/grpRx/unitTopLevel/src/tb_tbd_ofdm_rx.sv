@@ -113,7 +113,7 @@ module TbTbdOfdmRx #(
 			end else if (retcode == 12) begin
 				verify.printError("Validation not successful, couldn't open or read from files");
 			end else begin
-				verify.printError("Validation not successful, unknown error");
+				verify.printError("Validation not successful. Maybe you need to install Python3 and add it to your PATH variable.");
 			end
 		end
 	endtask

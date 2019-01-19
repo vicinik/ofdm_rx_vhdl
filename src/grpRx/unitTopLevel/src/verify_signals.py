@@ -1,8 +1,12 @@
 import argparse
 import sys
-import numpy as np
-from matplotlib import pyplot as plt
 import ast
+
+try:
+    import numpy as np
+    from matplotlib import pyplot as plt
+except:
+    exitMsgCode('You need to install the Python modules numpy and matplotlib (pip install numpy matplotlib)', 1)
 
 parser = argparse.ArgumentParser(description='Script for verifying the OFDM RX output signals')
 parser.add_argument('--bit_file', dest='bitfile', type=str, action='store', required=True, help='File with the expected bitstream')
