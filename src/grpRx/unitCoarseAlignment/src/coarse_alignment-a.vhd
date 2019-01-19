@@ -5,6 +5,7 @@ architecture Rtl of CoarseAlignment is
 	-- constants
 	constant cBufferLength : natural := (symbol_length_g * 2**(osr_g)) / 2;
 	constant cResultValueLength : natural := 30;
+	constant cMaxOffsetCounter : natural := 2**(osr_g) - 1;
 	
 	-- type definitions	
 	type aState is (Init, ThresholdDetection, PeakDetection, WaitOnSymbolFinished, CoarseAlignmentDone);
@@ -31,16 +32,16 @@ architecture Rtl of CoarseAlignment is
 		PrevPValue : aPValue;
 		Threshold : signed(cResultValueLength - 1 downto 0);
 		SampleCounter : unsigned(LogDualis(symbol_length_g) - 1 downto 0);
+		OffsetCounter : unsigned(LogDualis(2**(osr_g)) downto 0);
 		OutputSymbolStart : std_ulogic;
-		Delay : unsigned(3 downto 0);
-		Offset : unsigned(3 downto 0);
+		OutputValid : std_ulogic;
+		OutputActive : std_ulogic;
 		WriteIdx : unsigned(LogDualis(cBufferLength) - 1 downto 0);
 		ReadIdx : unsigned(LogDualis(cBufferLength) - 1 downto 0);
 	end record;
 
 	-- constants
 	constant cMaxSampleCounterValue : unsigned(LogDualis(symbol_length_g) - 1 downto 0) := to_unsigned(symbol_length_g, LogDualis(symbol_length_g));
-	constant cMaxDelayOffsetValue : unsigned(3 downto 0) := x"F";
 	constant cInitWriteIdx : unsigned(LogDualis(cBufferLength) - 1 downto 0) :=  to_unsigned(cBufferLength - 1, LogDualis(cBufferLength));
 	constant cInitReadIdx : unsigned(LogDualis(cBufferLength) - 1 downto 0) :=  (others => '0');
 	constant cInitPInterim : aPInterimValue := (others => (others => '0'));
@@ -55,9 +56,10 @@ architecture Rtl of CoarseAlignment is
 		PrevPValue => cInitPValue,
 		Threshold => (others => '0'),
 		SampleCounter => (others => '0'),
+		OffsetCounter => (others => '0'),
 		OutputSymbolStart => '0',
-		Delay => (others => '0'),
-		Offset => (others => '0'),
+		OutputValid => '0',
+		OutputActive => '0',
 		WriteIdx => to_unsigned(cBufferLength - 1, LogDualis(cBufferLength)),
 		ReadIdx => (others => '0')
 	);
@@ -154,10 +156,14 @@ begin
 	end process;
 	
 	-- State machine for coarse alignment
-	StateMachine: process (regCoarse, regPValue, min_level_i, rx_data_osr_valid_i, offset_inc_i, offset_dec_i) is
+	StateMachine: process (regCoarse, regPValue, min_level_i, rx_data_osr_valid_i, rx_data_i_osr_i, rx_data_q_osr_i, offset_inc_i, offset_dec_i) is
+		variable vMaxCounterValue : natural := 0;
 	begin
 		nextRegCoarse <= regCoarse;
-		interp_mode_o <= '0'; -- interpolator is in oversampling mode
+		rx_data_coarse_valid_o <= '0';
+		rx_data_coarse_start_o <= '0';
+		rx_data_i_coarse_o <= (others => '0');
+		rx_data_q_coarse_o <= (others => '0');
 		
 		if (rx_data_osr_valid_i = '1') and (regCoarse.State /= CoarseAlignmentDone) then
 			nextRegCoarse.WriteIdx <= regCoarse.WriteIdx + 1;
@@ -187,7 +193,7 @@ begin
 			when PeakDetection =>
 				nextRegCoarse.PrevPValue <= regPValue;				
 				if regCoarse.PrevPValue.I > regPValue.I then
-					nextRegCoarse.State <= WaitOnSymbolFinished;
+					nextRegCoarse.State <= CoarseAlignmentDone;
 				end if;
 			-- wait if the current symbol at the high rate is done
 			when WaitOnSymbolFinished =>
@@ -196,47 +202,44 @@ begin
 				end if;
 			-- Coarse alignment is done. The measured delay is ajusted according to the fine alignment and passed to the interpolator. The input samples are passed to the output
 			-- and the start of symbol signal is generated. The interpolation mode is set to '1'.
-			when CoarseAlignmentDone =>
-				interp_mode_o <= '1'; -- interpolator is in offset mode			
-				if (rx_data_osr_valid_i = '1') then
-					-- increase sample counter to generate the start of symol signal.
-					nextRegCoarse.SampleCounter <= regCoarse.SampleCounter + 1;
-					
-					if (regCoarse.SampleCounter = (cMaxSampleCounterValue - 1)) then
-						nextRegCoarse.SampleCounter <= (others => '0');
-					end if;
-					
-					if (regCoarse.SampleCounter = x"00") then
-						nextRegCoarse.OutputSymbolStart <= '1';
+			when CoarseAlignmentDone =>		
+				if (rx_data_osr_valid_i = '1') then				
+					nextRegCoarse.OffsetCounter <= regCoarse.OffsetCounter + 1;
 						
-						-- adjust delay and offset for interpolator
-						-- increment offset and delay
-						if (offset_inc_i = '1') and (offset_dec_i = '0') then
-							nextRegCoarse.Offset <= regCoarse.Offset + 1;
-							if (regCoarse.Offset = cMaxDelayOffsetValue) then
-								nextRegCoarse.Offset <= (others => '0');
-								nextRegCoarse.Delay <= regCoarse.Delay + 1;
-								if (regCoarse.Delay = cMaxDelayOffsetValue) then
-									nextRegCoarse.Delay <= (others => '0');
-								end if;
-							end if;						
-						-- decrement offset and delay
-						elsif (offset_inc_i = '0') and (offset_dec_i = '1') then
-							nextRegCoarse.Offset <= regCoarse.Offset - 1;
-							if (regCoarse.Offset = x"0") then
-								nextRegCoarse.Offset <= cMaxDelayOffsetValue;
-								nextRegCoarse.Delay <= regCoarse.Delay - 1;
-								if (regCoarse.Delay = x"0") then
-									nextRegCoarse.Delay <= cMaxDelayOffsetValue;
-								end if;
-							end if;	
-						end if;						
+					if ((regCoarse.SampleCounter = (symbol_length_g - 1)) and (offset_inc_i = '1') and (offset_dec_i = '0')) then
+						vMaxCounterValue := cMaxOffsetCounter + 1;
+					elsif ((regCoarse.SampleCounter = (symbol_length_g - 1)) and (offset_inc_i = '0') and (offset_dec_i = '1')) then
+						vMaxCounterValue := cMaxOffsetCounter - 1;
 					else
-						nextRegCoarse.OutputSymbolStart <= '0';
+						vMaxCounterValue := cMaxOffsetCounter;
 					end if;
+					
+					if (regCoarse.OffsetCounter = vMaxCounterValue) then
+						nextRegCoarse.OffsetCounter <= (others => '0');
+						nextRegCoarse.OutputActive <= '1';
+						nextRegCoarse.SampleCounter <= regCoarse.SampleCounter + 1;	
+						
+						if (regCoarse.SampleCounter = (symbol_length_g - 1)) then
+							nextRegCoarse.SampleCounter <= (others => '0');
+						end if;
+					end if;		
+					
 				else
 					nextRegCoarse.OutputSymbolStart <= '0';
+					nextRegCoarse.OutputValid <= '0';
 				end if;
+				
+				if ((regCoarse.OffsetCounter = x"00") and (regCoarse.OutputActive = '1')) then
+					rx_data_coarse_valid_o <= '1';
+					rx_data_i_coarse_o <= rx_data_i_osr_i;
+					rx_data_q_coarse_o <= rx_data_q_osr_i;
+					nextRegCoarse.OutputActive <= '0';
+					
+					if (regCoarse.SampleCounter = x"00") then
+						rx_data_coarse_start_o <= '1';
+					end if;
+				end if;
+
 			when others =>
 				null;
 		end case;		
@@ -265,14 +268,4 @@ begin
 			pInterimL <= correlationBuffer(to_integer(regReadIdxCorrelation));
 		end if;
 	end process;
-	
-	-- pass the input sampels to the output
-	rx_data_i_coarse_o <= rx_data_i_osr_i when rx_data_osr_valid_i = '1' and regCoarse.State = CoarseAlignmentDone else (others => '0');
-	rx_data_q_coarse_o <= rx_data_q_osr_i when rx_data_osr_valid_i = '1' and regCoarse.State = CoarseAlignmentDone else (others => '0');
-	rx_data_coarse_valid_o <= rx_data_osr_valid_i when regCoarse.State = CoarseAlignmentDone else '0';
-	rx_data_coarse_start_o <= regCoarse.OutputSymbolStart;
-	
-	-- pass the delay to the interpolator unit
-	rx_data_delay_o <= std_ulogic_vector(regCoarse.Delay) when regCoarse.State = CoarseAlignmentDone else (others => '0');
-	rx_data_offset_o <= std_ulogic_vector(regCoarse.Offset) when regCoarse.State = CoarseAlignmentDone else (others => '0');	
 end architecture;
