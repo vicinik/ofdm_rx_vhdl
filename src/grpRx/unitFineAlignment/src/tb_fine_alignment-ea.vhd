@@ -16,7 +16,7 @@ architecture Bhv of tbCoarseAlignment is
 	-- constants
 	constant cSysClkPeriod : time := 10 ns; -- 100 MHz
 	constant cDataClkPeriod : time := 250 ns; -- 4 MS/s
-	constant cSamplesPerSymbol : natural := 128;
+	constant cSamplesPerSymbol : natural := 128 + 2;
 	constant cSampleBitWidth : natural := 12;
 	constant cTimeBeforeRisingEdge : time := cSysClkPeriod / 10;
 	constant cTrainingsSymbolPosition : natural := 2;
@@ -89,7 +89,7 @@ begin
 					rx_symbols_q_fft_in <= v_ofdm_signal(v_idx).Q, (others => '0') after cSysClkPeriod;
 					rx_symbols_fft_valid <= '1', '0' after cSysClkPeriod;
 					rx_symbols_fft_start <= '0', '0' after cSysClkPeriod;
-					if v_idx = 1 then
+					if v_idx = 1 or v_idx = 129 then
 						rx_symbols_fft_start <= '1', '0' after cSysClkPeriod;
 					end if;
 					wait for cDataClkPeriod;

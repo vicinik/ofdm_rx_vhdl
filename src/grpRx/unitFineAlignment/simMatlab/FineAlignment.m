@@ -115,6 +115,8 @@ legend({'RX Symbols'},'Location','best');
 grid on;
 
 %% Write test data file
+ExtraSamples = 2;
+
 [fileID, errormsg] = fopen("Test_RxModSymbols.txt","wt+");
 
 for i=1:NumberOfSubcarrier
@@ -135,4 +137,24 @@ for i=1:NumberOfSubcarrier
    
    fprintf(fileID, "%d %d\n", SymbolRealInt, SymbolImagInt); 
 end
+
+for i=1:ExtraSamples
+    SymbolReal = real(RxModSymbols(i));
+    SymbolImag = imag(RxModSymbols(i));
+    
+   if(sign(SymbolReal) == 1)
+       SymbolRealInt = int32(SymbolReal * 2047);
+   else
+       SymbolRealInt = int32(SymbolReal * 2048);
+   end
+   
+   if(sign(SymbolImag) == 1)
+       SymbolImagInt = int32(SymbolImag * 2047);
+   else
+       SymbolImagInt = int32(SymbolImag * 2048);
+   end
+   
+   fprintf(fileID, "%d %d\n", SymbolRealInt, SymbolImagInt); 
+end
+
 fclose(fileID);

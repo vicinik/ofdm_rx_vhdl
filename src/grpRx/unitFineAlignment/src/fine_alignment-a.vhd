@@ -37,22 +37,34 @@ architecture Rtl of FineAlignment is
       constant R : in aFineAlignmentRegSet;
       signal NxR : out aFineAlignmentRegSet
     ) is
+      variable vSumReal : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0) := (others => '0'); 
+      variable vSumImag : signed(sample_bit_width_g + LogDualis(cSymbolsUsedForPhase) - 1 downto 0) := (others => '0');
     begin
+
+      -- Check for new symbol -> init registers with new value
+      if R.State = Init then
+        vSumReal := (others => '0');
+        vSumImag := (others => '0');
+      else
+        vSumReal := R.SumReal;
+        vSumImag := R.SumImag;
+      end if;
+
        -- first quadrant
       if (rx_symbol_i > 0) and (rx_symbol_q < 0) then
-        NxR.SumReal <= R.SumReal - rx_symbol_i;
-        NxR.SumImag <= R.SumImag + rx_symbol_q;
+        NxR.SumReal <= vSumReal - rx_symbol_i;
+        NxR.SumImag <= vSumImag + rx_symbol_q;
       -- third quadrant
       elsif (rx_symbol_i <= 0) and (rx_symbol_q <= 0) then
-        NxR.SumReal <= R.SumReal - rx_symbol_i;
-        NxR.SumImag <= R.SumImag - rx_symbol_q;
+        NxR.SumReal <= vSumReal - rx_symbol_i;
+        NxR.SumImag <= vSumImag - rx_symbol_q;
       -- second quadrant
       elsif (rx_symbol_i < 0) and (rx_symbol_q > 0) then
-        NxR.SumReal <= R.SumReal + rx_symbol_i;
-        NxR.SumImag <= R.SumImag - rx_symbol_q;
+        NxR.SumReal <= vSumReal + rx_symbol_i;
+        NxR.SumImag <= vSumImag - rx_symbol_q;
       else -- first quadrant
-        NxR.SumReal <= R.SumReal + rx_symbol_i;
-        NxR.SumImag <= R.SumImag + rx_symbol_q;
+        NxR.SumReal <= vSumReal + rx_symbol_i;
+        NxR.SumImag <= vSumImag + rx_symbol_q;
       end if;
     end pSumQuadrantValue;
 
