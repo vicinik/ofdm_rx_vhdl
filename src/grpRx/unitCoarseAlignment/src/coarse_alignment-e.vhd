@@ -4,8 +4,9 @@ use ieee.numeric_std.all;
 
 entity CoarseAlignment is
     generic (
-        symbol_length_g   : natural := 160;
-        sample_bit_width_g : natural := 12
+        symbol_length_g   	: natural := 320;		
+        sample_bit_width_g 	: natural := 12;
+		osr_g				: natural := 4
     );
     port (
         -- clock, async reset and init signal
@@ -21,9 +22,6 @@ entity CoarseAlignment is
         -- inputs from fine alignment and delay outputs for interpolator
         offset_inc_i            : in std_ulogic;
         offset_dec_i            : in std_ulogic;
-        interp_mode_o           : out std_ulogic;
-        rx_data_delay_o         : out std_ulogic_vector(3 downto 0);
-        rx_data_offset_o        : out std_ulogic_vector(3 downto 0);
         
         -- threshold for coarse alignment
         min_level_i             : in unsigned(15 downto 0);

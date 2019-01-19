@@ -1,9 +1,14 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use work.TbdOfdmRxPack.all;
 
 entity TbdOfdmRx is
+    generic(
+        sample_bit_width_g  : natural := 12;
+        symbol_length_g     : natural := 160;
+        raw_symbol_length_g : natural := 128;
+        osr_g               : natural := 10
+    );
     port(
         -- clock, reset and init ports
         sys_clk_i  : in std_ulogic;
@@ -14,8 +19,8 @@ entity TbdOfdmRx is
         min_level_i : in unsigned(15 downto 0);
 
         -- rx filter data inputs
-        rx_data_i_i         : in signed((sample_bit_width_c - 1) downto 0);
-        rx_data_q_i         : in signed((sample_bit_width_c - 1) downto 0);
+        rx_data_i_i         : in signed((sample_bit_width_g - 1) downto 0);
+        rx_data_q_i         : in signed((sample_bit_width_g - 1) downto 0);
         rx_data_valid_i     : in std_ulogic;
 
         -- bitstream data outputs
