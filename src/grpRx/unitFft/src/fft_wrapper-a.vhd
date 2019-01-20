@@ -43,7 +43,7 @@ architecture rtl of FftWrapper is
 
 		
 		-- type definitions	
-		type aState is (WaitOnFFTReady, LastValid, Transfer);
+		type aState is (Init, WaitOnFFTReady, LastValid, Transfer);
 	
 		type aComplexSample is record
 		I : signed(sample_bit_width_g - 1 downto 0);
@@ -56,6 +56,7 @@ architecture rtl of FftWrapper is
 
 		type aRegister is record
 			State : aState;
+			InitCounter : unsigned(9 downto 0);
 			SampleCounter : unsigned(LogDualis(raw_symbol_length_g*2) - 1 downto 0);
 			TransferCounter : unsigned(LogDualis(raw_symbol_length_g*2) - 1 downto 0);
 			ResultCounter : unsigned(LogDualis(raw_symbol_length_g*2) - 1 downto 0);
@@ -74,7 +75,8 @@ architecture rtl of FftWrapper is
 		
 		
 		constant cInitReg : aRegister := (
-			State => WaitOnFFTReady,
+			InitCounter => (others => '0'),
+			State => Init,
 			SampleCounter => (others => '0'),
 			ResultCounter => (others => '0'),
 			Result => (others => (others => '0')),
@@ -97,8 +99,7 @@ architecture rtl of FftWrapper is
 		signal sink_valid : std_logic;
 		signal sink_error : std_logic_vector(1 downto 0);
 		signal sink_sop : std_logic;
-		signal sink_eop  : std_logic;                          -- endofpacket
-		signal fft_reset_n : std_logic;
+		signal sink_eop  : std_logic;   
 		
 		signal inverse      : std_logic ; --       .inverse                         -- data
 		signal sink_imag   :  std_logic_vector(11 downto 0);  -- data
@@ -111,7 +112,7 @@ architecture rtl of FftWrapper is
 		signal source_exp   : std_logic_vector(5 downto 0);                     -- data
 		signal source_imag  : std_logic_vector(11 downto 0);                    -- data
 		signal source_real  : std_logic_vector(11 downto 0);                     -- data
-
+		signal reset 		: std_logic;
 		signal Reg, NxrReg : aRegister;
 
 
@@ -121,7 +122,7 @@ begin
 		FFTInstance : component fft_fft_ii_0
 		port map (
 			clk          => sys_clk_i,
-			reset_n      => fft_reset_n,
+			reset_n      => reset,
 			sink_valid   => sink_valid,
 			sink_ready   => sink_ready,
 			sink_error   => sink_error,
@@ -141,29 +142,6 @@ begin
 		);
 
 
-	--bufferProcess: process(Reg.ReadIdx, Reg.WriteIdx) is
-	--begin
-		--if (Reg.WriteIdx = (cBufferLength - 1)) then
-			--NxrReg.WriteIdx <= (others => '0');
-		--end if;
-				
-		--if (Reg.ReadIdx = (cBufferLength - 1)) then
-			--NxrReg.ReadIdx <= (others => '0');
-		--end if;
-	--end process;
-
-	
-
-		--rx_symbols_i_lengtho         : out signed((sample_bit_width_g - 1) downto 0);
-       -- rx_symbols_q_fft_o         : out signed((sample_bit_width_g - 1) downto 0);
-		
-
-
-		--todo subcarrier entfernen
-
-	
-
-
 		-- register process to store all needed states and values
 	RegisterProcess: process (sys_clk_i, sys_rstn_i) is
 	begin
@@ -171,7 +149,7 @@ begin
 			Reg <= cInitReg;
 		elsif (rising_edge(sys_clk_i)) then
 			if (sys_init_i = '1') then
-				Reg <= CInitReg;
+				Reg <= cInitReg;
 			else
 				Reg <= NxrReg;
 			end if;
@@ -180,7 +158,7 @@ begin
 	
 
 	FSM: process(Reg,rx_data_fft_valid_i, rx_data_i_fft_i,rx_data_q_fft_i,sink_ready, source_imag, source_real,source_valid,source_sop, source_exp) is
-		variable exp : natural := 0;
+		variable exp : integer := 0;
 	begin
 
 		NxrReg <= Reg;
@@ -202,6 +180,13 @@ begin
 
 	
 		case Reg.State is
+
+			when Init =>
+				NxrReg.InitCounter <= Reg.InitCounter + 1;
+				if Reg.InitCounter = 9 then
+					NxrReg.State <=  WaitOnFFTReady;
+					NxrReg.InitCounter <= (others => '0');	
+				end if;
 
 			when WaitOnFFTReady => --Fill Buffer
 
@@ -229,8 +214,6 @@ begin
 						NXrReg.TransferCounter <= (others => '0');
 					end if;
 					
-					--if Reg.TransferCounter = FFTLength then
-					--end if;
 
 				end if;
 
@@ -252,24 +235,18 @@ begin
 			NxrReg.REsultCounter <= Reg.ResultCounter + 1;
 
 			if Reg.ResultCounter < 64 or Reg.ResultCounter >= 192 then
-
 				exp := fft_exp_g - to_integer(signed(source_exp)) - cNumberSymbols ;
 				NXrReg.Result.Q <= shift_left(signed(source_imag),exp);
 				NXrReg.Result.I <= shift_left(signed(source_real),exp);
 				NxrReg.resultvalid     <= source_valid;
 				NxrReg.resultstart     <= source_sop;
 			end if;
-
-			if Reg.ResultCounter = 0 then
-				NxrReg.resultstart     <= '1';
-			end if;
-
+	
 			if Reg.ResultCounter = 255 then
 				NxrReg.ResultCounter <= (others => '0');
 			end if;
 
 		end if;
-
 
 		end process;
 
@@ -290,7 +267,7 @@ source_ready <= '1';
 
 sink_error <= (others => '0');
 inverse <= '0';
-fft_reset_n <= not(not sys_rstn_i or std_logic(sys_init_i));
 
+reset <= '0' when Reg.State = Init else '1';
 
 end architecture rtl; -- of FftWrapper
