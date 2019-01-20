@@ -98,6 +98,7 @@ architecture rtl of FftWrapper is
 		signal sink_error : std_logic_vector(1 downto 0);
 		signal sink_sop : std_logic;
 		signal sink_eop  : std_logic;                          -- endofpacket
+		signal fft_reset_n : std_logic;
 		
 		signal inverse      : std_logic ; --       .inverse                         -- data
 		signal sink_imag   :  std_logic_vector(11 downto 0);  -- data
@@ -120,7 +121,7 @@ begin
 		FFTInstance : component fft_fft_ii_0
 		port map (
 			clk          => sys_clk_i,
-			reset_n      => sys_rstn_i,
+			reset_n      => fft_reset_n,
 			sink_valid   => sink_valid,
 			sink_ready   => sink_ready,
 			sink_error   => sink_error,
@@ -289,6 +290,7 @@ source_ready <= '1';
 
 sink_error <= (others => '0');
 inverse <= '0';
+fft_reset_n <= sys_rstn_i or std_logic(sys_init_i);
 
 
 end architecture rtl; -- of FftWrapper

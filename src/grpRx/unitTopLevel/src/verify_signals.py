@@ -41,14 +41,20 @@ def main():
         exitMsgCode(str(e), 12)
     
     error_cnt = 0
-    for i in range(len(rx_bitstream)):
+    symbol_length = 256
+    ver_start = 8
+    ver_end = 12
+    # We skip the first few symbols which are not really synchronized
+    interesting_bit_range = range(int(symbol_length*ver_start), int(symbol_length*ver_end))
+    for i in interesting_bit_range:
         error_cnt += 0 if exp_bitstream[i] == rx_bitstream[i] else 1
 
-    ber = error_cnt/len(rx_bitstream) if len(rx_bitstream) > 0 else 0
+    ber = error_cnt/len(interesting_bit_range) if len(interesting_bit_range) > 0 else 0
     plt.figure(), plt.suptitle('Modulation symbols scatter plot')
     plt.title('BER: {:.3f}'.format(ber), fontsize=9), plt.grid()
     plt.xlabel('Inphase'), plt.ylabel('Quadrature')
-    plt.scatter(np.real(rx_symbols), np.imag(rx_symbols), c='black', marker='x')
+    interesting_sym_range = range(int(symbol_length/2*ver_start), int(symbol_length/2*ver_end))
+    plt.scatter(np.real(rx_symbols[interesting_sym_range]), np.imag(rx_symbols[interesting_sym_range]), c='black', marker='x')
     plt.savefig(args.plotfile)
 
     retcode = 0

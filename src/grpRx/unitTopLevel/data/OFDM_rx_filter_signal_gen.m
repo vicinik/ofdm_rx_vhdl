@@ -15,8 +15,8 @@ NumberOfGuardChips = BaseRatio*32;
 NumberOfSymbols = BaseRatio*128;
 NumberOfBits=2*NumberOfSymbols;
 NumberOfSyncSamples = BaseRatio*80;
-NumberOfRuns=10;
-NumberOfFiles=10;
+NumberOfRuns=15;
+NumberOfFiles=3;
 
 %% Tx Signal Generation
 % In this section the TX signal is generated, which will later be sent
@@ -35,7 +35,6 @@ for k=1:NumberOfRuns
 
 % First, we generate a random sequence of bits
 TxBits=round(rand(NumberOfBits,1));
-allTxBits = [allTxBits; TxBits];
 TxSymbols=zeros(NumberOfSymbols,2);
 for i=1:NumberOfSymbols
   TxSymbols(i,:)=TxBits((2*i-1):2*i)';
@@ -59,6 +58,9 @@ for j=1:NumberOfSymbols
    end
 end
 
+% Set the unused subcarriers to 0
+% ModulationSymbols(NumberOfBits/4:NumberOfBits/4*3) = 0;
+
 % OFDM Tx
 % We calculate the IFFT and add some GuardChips at the beginning of the
 % sequence. Note that we upsample directly by using the FFT, as we perform
@@ -73,6 +75,8 @@ AWGN=AWGNGain*randn(length(TxAntennaChips),1)+1i*AWGNGain*randn(length(TxAntenna
 AWGN_Scaled=AWGN*2^(15 + exp_ifft(1)); % Scaling of the AWGN
 TxAntennaChips=TxAntennaChips+AWGN_Scaled;
 
+% Cut out the unused bits
+allTxBits = [allTxBits; TxBits(1:NumberOfBits/4); TxBits(NumberOfBits/4*3+1:end)];
 allTx = [allTx; TxAntennaChips];
 allTxModSymbols = [allTxModSymbols; ModulationSymbols];
 allExpIfft = [allExpIfft, exp_ifft];
@@ -110,12 +114,12 @@ rx_in = filter(AD9361_Rx_Filter_object, tx_out);
 rx_in = double(rx_in).';
 rx_in_t = 0:1/FilterSR:(length(rx_in)-1)/FilterSR;
 
-rx_in = round(rx_in*2^3);
+rx_in = round(rx_in*2^4);
 
 %plot(rx_in_t, rx_in)
 dlmwrite(sprintf('rx_in_signal%i.csv', l-1), [real(rx_in).', imag(rx_in).'], 'precision', '%i')
 csvwrite(sprintf('result_bits%i.csv', l-1), allTxBits)
 
-fprintf('Finished #%i, Exponent: %f\n', l-1, mean(allExpIfft)+3);
+fprintf('Finished #%i, Exponent: %f\n', l-1, mean(allExpIfft)+4);
 
 end

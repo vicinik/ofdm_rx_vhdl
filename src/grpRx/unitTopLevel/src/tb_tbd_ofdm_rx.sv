@@ -126,14 +126,15 @@ module TbTbdOfdmRx #(
 		// a timeout occurs
 		fork : f
 			begin
-				wait (rx_data_output_cnt >= 256 /*$size(signals.output_signal)/10*/);
+				// Wait until we have about 12 Symbols
+				wait (rx_data_output_cnt >= raw_symbol_length_g*12);
 				received_bitstream = 1;
-				verify.printInfo($psprintf("Received %0d output bits until now", rx_data_output_cnt));
+				verify.printInfo("Received enough output bits");
 				disable f;
 			end
 			begin
-				#1ms;
-				verify.printError("Didn't get enaugh output bits after 1ms");
+				#10ms;
+				verify.printError("Didn't get enaugh output bits after 10ms");
 				disable f;
 			end
 		join
@@ -147,8 +148,8 @@ module TbTbdOfdmRx #(
 
 	// Process which collects the rx bitstream
 	always @(posedge ofdm_rx_if.rx_rcv_data_valid) begin
-		if (rx_data_output_cnt == 0) begin
-			verify.printInfo("Receiving the first output bits");
+		if (rx_data_output_cnt % raw_symbol_length_g == 0) begin
+			verify.printInfo($psprintf("Received %0d output bits", rx_data_output_cnt));
 		end
 		signals.addRxBitstream(ofdm_rx_if.rx_rcv_data);
 		rx_data_output_cnt += 2;
@@ -186,7 +187,7 @@ module TbTbdOfdmRx #(
 		sys_rstn = 1;
 		
 		// Tests
-		for (int i = 0; i < 5; i++) begin
+		for (int i = 0; i < 3; i++) begin
 			testSequence(i);
 		end
 		
