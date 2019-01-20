@@ -13,9 +13,9 @@ use work.LogDualisPack.all;
 
 architecture rtl of FftWrapper is
 	
-		constant cBufferLength : natural := raw_symbol_length_g*3;
-		constant FFTLength : natural := raw_symbol_length_g*2;
-		constant cNumberSymbols : natural := LogDualis(raw_symbol_length_g*2);
+		constant cBufferLength : natural := raw_symbol_length_g*2;
+		constant FFTLength : natural := raw_symbol_length_g;
+		constant cNumberSymbols : natural := LogDualis(raw_symbol_length_g);
 
 		-- Components FFT
 		component fft_fft_ii_0 is

@@ -77,7 +77,7 @@ begin
 	fsm: process (Reg, rx_data_valid_i, rx_data_q_i, rx_data_i_i)
 	begin
 		NxrReg <= Reg;	   
-
+		NxrReg.Valid <= '0';
 
 		case Reg.State is
 
