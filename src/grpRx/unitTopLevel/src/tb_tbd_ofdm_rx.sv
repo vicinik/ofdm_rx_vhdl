@@ -127,14 +127,14 @@ module TbTbdOfdmRx #(
 		fork : f
 			begin
 				// Wait until we have about 12 Symbols
-				wait (rx_data_output_cnt >= raw_symbol_length_g*12);
+				wait (rx_data_output_cnt >= raw_symbol_length_g*4);
 				received_bitstream = 1;
 				verify.printInfo("Received enough output bits");
 				disable f;
 			end
 			begin
 				#10ms;
-				verify.printError("Didn't get enaugh output bits after 10ms");
+				verify.printError("Didn't get enough output bits after 10ms");
 				disable f;
 			end
 		join

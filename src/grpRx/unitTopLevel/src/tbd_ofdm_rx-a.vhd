@@ -113,7 +113,7 @@ begin
     -- fine alignment instantiation
     fine_alignment_inst : entity work.FineAlignment
         generic map(
-            raw_symbol_length_g  => raw_symbol_length_g,
+            raw_symbol_length_g  => raw_symbol_length_g/2,
             sample_bit_width_g   => sample_bit_width_g
         )
         port map(
