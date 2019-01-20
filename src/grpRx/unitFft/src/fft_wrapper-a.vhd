@@ -4,6 +4,7 @@
 
 library IEEE;
 library work;
+library fft_ii_0;
 
 use work.LogDualisPack.all; 
 use IEEE.std_logic_1164.all;
@@ -17,7 +18,7 @@ architecture rtl of FftWrapper is
 		constant cNumberSymbols : natural := LogDualis(raw_symbol_length_g*2);
 
 		-- Components FFT
-		component fft is
+		component fft_fft_ii_0 is
 		port (
 			clk          : in  std_logic                     := 'X';             -- clk
 			reset_n      : in  std_logic                     := 'X';             -- reset_n
@@ -38,7 +39,7 @@ architecture rtl of FftWrapper is
 			source_imag  : out std_logic_vector(11 downto 0);                    -- data
 			source_real  : out std_logic_vector(11 downto 0)                     -- data
 		);
-		end component fft;
+		end component fft_fft_ii_0;
 
 		
 		-- type definitions	
@@ -116,7 +117,7 @@ architecture rtl of FftWrapper is
 begin
 
 
-		FFTInstance : component fft
+		FFTInstance : component fft_fft_ii_0
 		port map (
 			clk          => sys_clk_i,
 			reset_n      => sys_rstn_i,

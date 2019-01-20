@@ -7,34 +7,35 @@ z2
 !i10e 25
 !i10f 100
 cModel Technology
-Z0 dD:/Alexander/FH/ESD/3_Semester/OSP/ofdm_rx_vhdl/src/grpRx/unitFft/sim/mentor
+dD:/Alexander/FH/ESD/3_Semester/OSP/ofdm_rx_vhdl/src/grpRx/unitFft/sim/mentor
 valtera_reset_controller
-Z1 !s110 1547910599
+Z0 !s110 1547930620
 !i10b 1
-!s100 VEhLaE^KT@RiagZkfkKI93
-I<34=A@SX@Q__4G?C]Ch^;2
-Z2 V`JN@9S9cnhjKRR_L]QIcM3
-R0
-Z3 w1547910427
+!s100 z[H_hRO9gO=:^2E3_jWH03
+I5VG:hXMS<^z[_N3SMUlKT3
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+Z2 dD:/Documents/Repos/ofdm_rx_vhdl/src/grpRx/unitFft/sim/mentor
+Z3 w1547911251
 8./../submodules/altera_reset_controller.v
 F./../submodules/altera_reset_controller.v
 L0 42
-Z4 OV;L;10.3d;59
+Z4 OV;L;10.5b;63
 r1
 !s85 0
 31
-!s108 1547910598.640000
+Z5 !s108 1547930620.000000
 !s107 ./../submodules/altera_reset_controller.v|
 !s90 -reportprogress|300|./../submodules/altera_reset_controller.v|-work|rst_controller|
 !i113 1
-Z5 o-work rst_controller
+Z6 o-work rst_controller
+Z7 tCvgOpt 0
 valtera_reset_synchronizer
-R1
-!i10b 1
-!s100 UTD:?4E=?>;X@do<;V;hQ1
-INgPnYbfRPN1:]:E1Yc`bI2
-R2
 R0
+!i10b 1
+!s100 oWLYmSO[EOX[G0PgQhZ2=0
+IhFVbn]P0aM7VjLNcWTf]C0
+R1
+R2
 R3
 8./../submodules/altera_reset_synchronizer.v
 F./../submodules/altera_reset_synchronizer.v
@@ -43,8 +44,9 @@ R4
 r1
 !s85 0
 31
-!s108 1547910599.231000
+R5
 !s107 ./../submodules/altera_reset_synchronizer.v|
 !s90 -reportprogress|300|./../submodules/altera_reset_synchronizer.v|-work|rst_controller|
 !i113 1
-R5
+R6
+R7

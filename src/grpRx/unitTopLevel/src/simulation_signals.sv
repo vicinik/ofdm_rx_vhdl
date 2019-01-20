@@ -65,7 +65,7 @@ class SimulationSignals;
         rx_rcv_mod_symbols_q[len] = mod_q;
     endfunction;
 
-    function void addRxBitstream(input logic bitstream[]);
+    function void addRxBitstream(input logic bitstream[1:0]);
         automatic int len = $size(rx_rcv_bitstream);
 
         rx_rcv_bitstream = new[len+2](rx_rcv_bitstream);

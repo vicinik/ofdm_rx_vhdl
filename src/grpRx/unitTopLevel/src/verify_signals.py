@@ -10,12 +10,13 @@ except:
 
 parser = argparse.ArgumentParser(description='Script for verifying the OFDM RX output signals')
 parser.add_argument('--bit_file', dest='bitfile', type=str, action='store', required=True, help='File with the expected bitstream')
-parser.add_argument('--result_file', dest='resultfile', type=str, action='store', default='output_signals.log', help='File with the result signals')
+parser.add_argument('--result_file', dest='resultfile', type=str, action='store', required=True, help='File with the result signals')
+parser.add_argument('--plot_file', dest='plotfile', type=str, action='store', required=True, help='File for saving the scatter plot to')
 args = parser.parse_args()
 
 def exitMsgCode(msg, code):
-	print(msg)
-	sys.exit(code)
+	print('{}\n{}\n'.format(code, msg))
+	sys.exit(0)
 
 def getSignals():
     exp_bitstream = []
@@ -47,13 +48,13 @@ def main():
     plt.figure(), plt.suptitle('Modulation symbols scatter plot')
     plt.title('BER: {:.3f}'.format(ber), fontsize=9), plt.grid()
     plt.xlabel('Inphase'), plt.ylabel('Quadrature')
-    plt.scatter(np.real(rx_symbols), np.imag(rx_symbols))
-    plt.show()
+    plt.scatter(np.real(rx_symbols), np.imag(rx_symbols), c='black', marker='x')
+    plt.savefig(args.plotfile)
 
-    if ber < 0.5:
-        exitMsgCode('BER < 0.5', 11)
-    elif ber < 0.9:
-        exitMsgCode('BER < 0.9', 10)
+    retcode = 0
+    if ber < 0.8: retcode = 10
+    
+    exitMsgCode('BER={:.3f}'.format(ber), retcode)
 
 if __name__ == '__main__':
     main()

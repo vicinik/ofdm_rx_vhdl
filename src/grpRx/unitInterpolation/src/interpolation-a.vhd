@@ -47,7 +47,7 @@ architecture Rtl of Interpolation is
 		Derives => (others => ( others => '0')),
 		Data => (others => (others => (others => '0'))),
 		Result => (others => (others => '0')),
-		Count => "0000",
+		Count => (others => '0'),
 		Valid => '0'
 	);
 
