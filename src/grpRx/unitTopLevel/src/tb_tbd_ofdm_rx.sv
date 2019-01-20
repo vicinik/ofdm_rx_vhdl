@@ -43,7 +43,7 @@ module TbTbdOfdmRx #(
 		ofdm_rx_if.rx_data_q = 0;
 		ofdm_rx_if.rx_data_valid = 0;
 		ofdm_rx_if.sys_init = 0;
-		ofdm_rx_if.min_level = 42752;
+		ofdm_rx_if.min_level = 32064;
 	endtask
 
 	// Task for system init

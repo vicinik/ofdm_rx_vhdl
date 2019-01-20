@@ -66,7 +66,7 @@ begin
 			rx_data_osr_valid_i => rxDataInValid,
 			offset_inc_i => offsetInc,
 			offset_dec_i => offsetDec,
-			min_level_i => x"A700",--x"8F10",
+			min_level_i => x"11E0", --x"A700",
 			rx_data_i_coarse_o => rxDataIOut,
 			rx_data_q_coarse_o => rxDataQOut,
 			rx_data_coarse_valid_o => rxDataOutValid,
