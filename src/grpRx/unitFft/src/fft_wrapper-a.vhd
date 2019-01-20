@@ -290,7 +290,7 @@ source_ready <= '1';
 
 sink_error <= (others => '0');
 inverse <= '0';
-fft_reset_n <= sys_rstn_i or std_logic(sys_init_i);
+fft_reset_n <= not(not sys_rstn_i or std_logic(sys_init_i));
 
 
 end architecture rtl; -- of FftWrapper
