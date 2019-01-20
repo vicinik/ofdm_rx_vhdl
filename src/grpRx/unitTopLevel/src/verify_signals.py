@@ -46,7 +46,7 @@ def main():
     interesting_bit_range = range(int(len(rx_bitstream)/4*3), len(rx_bitstream))
     for i in interesting_bit_range:
         error_cnt += 0 if exp_bitstream[i] == rx_bitstream[i] else 1
-    ber = error_cnt/len(interesting_bit_range) if len(interesting_bit_range) > 0 else 0
+    ber = error_cnt/len(interesting_bit_range) if len(interesting_bit_range) > 0 else 1.0
 
     # Scatter plot the modulation symbols
     plt.figure(), plt.suptitle('Modulation symbols scatter plot')
