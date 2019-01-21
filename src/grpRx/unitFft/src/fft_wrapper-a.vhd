@@ -69,6 +69,8 @@ architecture rtl of FftWrapper is
 			eop : std_ulogic; 
 			valid : std_ulogic; 
 			buff : aSampleMemory;
+			inputStart : std_ulogic;
+			inputValid : std_ulogic;
 		end record;
 
 		-- constants
@@ -84,10 +86,12 @@ architecture rtl of FftWrapper is
 			resultStart => '0',
 			TransferCounter => (others => '0'),
 			WriteIdx => (others => '0'),
-			ReadIdx => (others => '0'),
+			ReadIdx => (to_unsigned(cBufferLength-1, LogDualis(cBufferLength))),
 			Start => '0',
 			eop => '0',
 			valid => '0',
+			InputStart => '0',
+			InputValid => '0',
 			buff => (others => (others => (others =>'0')))
 		);	
 
@@ -114,7 +118,7 @@ architecture rtl of FftWrapper is
 		signal source_real  : std_logic_vector(11 downto 0);                     -- data
 		signal reset 		: std_logic;
 		signal Reg, NxrReg : aRegister;
-
+		signal eop 			: std_logic;
 
 begin
 
@@ -157,7 +161,7 @@ begin
 	end process;
 	
 
-	FSM: process(Reg,rx_data_fft_valid_i, rx_data_i_fft_i,rx_data_q_fft_i,sink_ready, source_imag, source_real,source_valid,source_sop, source_exp) is
+	FSM: process(rx_data_fft_start_i,Reg,rx_data_fft_valid_i, rx_data_i_fft_i,rx_data_q_fft_i,sink_ready, source_imag, source_real,source_valid,source_sop, source_exp) is
 		variable exp : integer := 0;
 	begin
 
@@ -165,17 +169,29 @@ begin
 		NxrReg.Start <= '0';
 		NxrReg.Valid <= '0';
 		NxrReg.EOP <= '0';
-
+		eop <= '0';
 		NxrReg.Result.I <= (others => '0');
 		NXrReg.Result.Q <= (others => '0');
 		NxrReg.resultvalid     <= '0';
 		NxrReg.resultstart    <= '0';
 
 		if rx_data_fft_valid_i = '1' then
+
+			if rx_data_fft_start_i = '1' then
+				NxrReg.InputStart <= '1';
+			end if;
+
 			NxrReg.buff(to_integer(Reg.WriteIdx)).I <= rx_data_i_fft_i;
 			NxrReg.buff(to_integer(Reg.WriteIdx)).Q <= rx_data_q_fft_i;
-			NxrReg.WriteIdx <= Reg.WriteIdx + 1;
-			NxrReg.SampleCounter <= Reg.SampleCounter + 1;
+			NxrReg.INputValid <= '1';
+
+			if (Reg.WriteIdx = (cBufferLength - 1)) then
+				NxrReg.WriteIdx <= (others => '0');
+			else
+
+				NxrReg.WriteIdx <= Reg.WriteIdx + 1;
+			end if;
+
 		end if;
 
 	
@@ -188,49 +204,58 @@ begin
 					NxrReg.InitCounter <= (others => '0');	
 				end if;
 
-			when WaitOnFFTReady => --Fill Buffer
+			when WaitOnFFTReady =>
 
-				--if ((Reg.SampleCounter = FFTLength-1) or (sink_ready = '1')) then
-				if (Reg.ReadIdx /= Reg.WriteIdx) and (sink_ready = '1') then
-						NxrReg.SampleCounter <= (others => '0');
+				if (Reg.ReadIdx /= Reg.WriteIdx) and (sink_ready = '1') and (Reg.InputStart = '1') and (Reg.INputValid = '1')then
+						NxrReg.InputStart <= '0';
+						NxrReg.INputValid <= '0';
 						NxrReg.State <= Transfer;
 						NxrReg.Start <= '1';
 						NxrReg.Valid <= '1';
-				end if;
 
-			when Transfer => --no buffering necessary
-
-				if (sink_ready = '1') and (Reg.ReadIdx /= Reg.WriteIdx) then
-					NxrReg.TransferCounter <= Reg.TransferCounter + 1;
-
-					NxrReg.Valid <= '1';
-					NxrReg.ReadIdx <= Reg.ReadIdx + 1;
-
-
-						
-					if Reg.TransferCounter = (FFTLength - 2) then
-						NxrReg.eop <= '1';
-						NxrReg.State <= WaitOnFFTReady;
-						NXrReg.TransferCounter <= (others => '0');
+					if (Reg.ReadIdx = (cBufferLength - 1)) then
+						NxrReg.ReadIdx <= (others => '0');
+					else
+						NxrReg.ReadIdx <= Reg.ReadIdx + 1;
 					end if;
-					
-
 				end if;
+
+			when Transfer => 
+
+		 if (sink_ready = '1') and (Reg.ReadIdx /= Reg.WriteIdx) and (Reg.InputValid = '1') then
+		 	NxrReg.TransferCounter <= Reg.TransferCounter + 1;
+		 	NxrReg.INputValid <= '0';
+		 	NxrReg.Valid <= '1';
+		 
+		 
+		 	if (Reg.ReadIdx = (cBufferLength - 1)) then
+		 		NxrReg.ReadIdx <= (others => '0');
+		 	else
+		 		NxrReg.ReadIdx <= Reg.ReadIdx + 1;
+		 	end if;
+		 
+		 		
+		 	if Reg.TransferCounter = (FFTLength - 2) then
+		 		NxrReg.eop <= '1';
+		 	end if;
+		 	
+		 
+		 end if;
+
+		 if Reg.TransferCounter = (FFTLength - 1) then
+		 		NxrReg.State <= WaitOnFFTReady;
+		 		NXrReg.TransferCounter <= (others => '0');
+		 end if;
+
+
 
 
 			when others => NULL;
 
 		end case;
 
-		if (Reg.WriteIdx = (cBufferLength - 1)) then
-			NxrReg.WriteIdx <= (others => '0');
-		end if;
-				
-		if (Reg.ReadIdx = (cBufferLength - 1)) then
-			NxrReg.ReadIdx <= (others => '0');
-		end if;
-
-
+	
+	
 		if source_valid = '1' then
 			NxrReg.REsultCounter <= Reg.ResultCounter + 1;
 
@@ -252,8 +277,8 @@ begin
 
 
 
-sink_imag   <= std_logic_vector(Reg.buff(to_integer(Reg.Readidx)).Q) when REg.State = Transfer else (others => '0');
-sink_real   <= std_logic_vector(Reg.buff(to_integer(Reg.Readidx)).I) when REg.State = Transfer else (others => '0');
+sink_imag   <= std_logic_vector(Reg.buff(to_integer(Reg.Readidx)).Q)  when REg.State = Transfer else (others => '0');
+sink_real   <= std_logic_vector(Reg.buff(to_integer(Reg.Readidx)).I)  when REg.State = Transfer else (others => '0');
 
 rx_symbols_i_fft_o  <= Reg.Result.I;
 rx_symbols_q_fft_o  <= Reg.Result.Q;
@@ -264,6 +289,9 @@ sink_valid <= Reg.Valid;
 sink_sop <= Reg.start;
 sink_eop <= Reg.eop;
 source_ready <= '1';
+
+   
+source_ready <= '1';     
 
 sink_error <= (others => '0');
 inverse <= '0';
