@@ -99,14 +99,14 @@ begin
 			regWriteIdxCorrelation <= cInitWriteIdx;
 			regReadIdxSamples <= cInitReadIdx;
 			regReadIdxCorrelation <= cInitReadIdx;
-		elsif (rising_edge(sys_clk_i)) then			
+		elsif (rising_edge(sys_clk_i)) then		
 			vRdm := (I => signed(rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdm(sample_bit_width_g - 1 downto 0))); -- current I,Q samples			
 			vRdmL := (I => signed(rdmL((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdmL(sample_bit_width_g - 1 downto 0))); -- delayed I,Q samples			
 			vPInterimL := (I => signed(pInterimL)); -- delayed correlation results		
 			regValid <= rx_data_osr_valid_i; -- store valid signal for next stage
 		
 			-- complex multipilcation
-			if (rx_data_osr_valid_i = '1') and (regCoarse.State /= CoarseAlignmentDone) then
+			if (rx_data_osr_valid_i = '1') then
 				regPInterim.I <= (vRdm.I * vRdmL.I) - (-vRdm.Q * vRdmL.Q);
 				--regPInterim.Q <= (-vRdm.Q * vRdmL.I) + (vRdm.I * vRdmL.Q);			
 			
@@ -123,7 +123,7 @@ begin
 			end if;
 			
 			-- accumulation of p signal
-			if (regValid = '1') and (regCoarse.State /= CoarseAlignmentDone) then
+			if (regValid = '1') then
 				regPValue.I <= regPValue.I + (regPInterim.I - vPInterimL.I);
 				
 				regWriteIdxCorrelation <= regWriteIdxCorrelation + 1;
@@ -136,6 +136,11 @@ begin
 				if (regReadIdxCorrelation = (cBufferLength - 1)) then
 					regReadIdxCorrelation <= (others => '0');
 				end if;
+			end if;
+			
+			-- init of p value
+			if (sys_init_i = '1') then
+				regPValue.I <= (others => '0');
 			end if;
 		end if;			
 	end process;
