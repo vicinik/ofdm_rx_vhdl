@@ -114,12 +114,12 @@ rx_in = filter(AD9361_Rx_Filter_object, tx_out);
 rx_in = double(rx_in).';
 rx_in_t = 0:1/FilterSR:(length(rx_in)-1)/FilterSR;
 
-rx_in = round(rx_in*2^4);
+rx_in = round(allTx*2^3);
 
 %plot(rx_in_t, rx_in)
-dlmwrite(sprintf('rx_in_signal%i.csv', l-1), [real(rx_in).', imag(rx_in).'], 'precision', '%i')
+dlmwrite(sprintf('rx_in_signal%i.csv', l-1), [real(rx_in), imag(rx_in)], 'precision', '%i')
 csvwrite(sprintf('result_bits%i.csv', l-1), allTxBits)
 
-fprintf('Finished #%i, Exponent: %f\n', l-1, mean(allExpIfft)+4);
+fprintf('Finished #%i, Exponent: %f\n', l-1, mean(allExpIfft)+3);
 
 end

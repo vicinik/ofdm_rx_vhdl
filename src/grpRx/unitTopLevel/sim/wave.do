@@ -37,6 +37,7 @@ add wave -noupdate -radix decimal /top/tbd_ofdm_rx/cp_removal_inst/rx_data_i_coa
 add wave -noupdate -radix decimal /top/tbd_ofdm_rx/cp_removal_inst/rx_data_q_coarse_i
 add wave -noupdate /top/tbd_ofdm_rx/cp_removal_inst/rx_data_coarse_valid_i
 add wave -noupdate /top/tbd_ofdm_rx/cp_removal_inst/rx_data_coarse_start_i
+add wave -noupdate -radix decimal /top/tbd_ofdm_rx/cp_removal_inst/counter
 add wave -noupdate -radix decimal /top/tbd_ofdm_rx/cp_removal_inst/rx_data_i_fft_o
 add wave -noupdate -radix decimal /top/tbd_ofdm_rx/cp_removal_inst/rx_data_q_fft_o
 add wave -noupdate /top/tbd_ofdm_rx/cp_removal_inst/rx_data_fft_valid_o
@@ -86,4 +87,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {140509184 ps}
+WaveRestoreZoom {1200786276 ps} {1341295460 ps}

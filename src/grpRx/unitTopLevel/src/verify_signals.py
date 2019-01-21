@@ -43,6 +43,7 @@ def main():
     # Calculate BER
     error_cnt = 0
     # We skip the first few symbols which are not really synchronized
+    #interesting_bit_range = range(256*8, 256*8+64)
     interesting_bit_range = range(int(len(rx_bitstream)/4*3), len(rx_bitstream))
     for i in interesting_bit_range:
         error_cnt += 0 if exp_bitstream[i] == rx_bitstream[i] else 1

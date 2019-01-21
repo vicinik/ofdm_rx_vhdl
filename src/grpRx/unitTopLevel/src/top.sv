@@ -9,7 +9,8 @@ module top;
 	parameter raw_symbol_length_c = 256;
 	parameter sample_bit_width_c = 12;
 	parameter osr_c = 4;
-	parameter fft_exp_c = 5;
+	parameter fft_exp_c = 6;
+	parameter coarse_alignment_level_c = 11000;  //32064;
 	logic sys_clk = 0, sys_rstn;
 	
 	// Clk generator
@@ -38,7 +39,8 @@ module top;
 	TbTbdOfdmRx #(
 		sample_bit_width_c,
 		symbol_length_c,
-		raw_symbol_length_c
+		raw_symbol_length_c,
+		coarse_alignment_level_c
 	) tb_tbd_ofdm_rx(
 		sys_clk,
 		sys_rstn,

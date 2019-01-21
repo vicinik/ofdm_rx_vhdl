@@ -9,7 +9,8 @@
 module TbTbdOfdmRx #(
 	parameter int sample_bit_width_g,
 	parameter int symbol_length_g,
-	parameter int raw_symbol_length_g
+	parameter int raw_symbol_length_g,
+	parameter int coarse_alignment_level_g
 ) (
 	input logic sys_clk,
 	output logic sys_rstn,
@@ -43,7 +44,7 @@ module TbTbdOfdmRx #(
 		ofdm_rx_if.rx_data_q = 0;
 		ofdm_rx_if.rx_data_valid = 0;
 		ofdm_rx_if.sys_init = 0;
-		ofdm_rx_if.min_level = 32064;
+		ofdm_rx_if.min_level = coarse_alignment_level_g;
 	endtask
 
 	// Task for system init
@@ -146,30 +147,29 @@ module TbTbdOfdmRx #(
 		end
 	endtask
 
-	// Process which collects the rx bitstream
-	always @(posedge ofdm_rx_if.rx_rcv_data_valid) begin
-		if (rx_data_output_cnt % raw_symbol_length_g == 0) begin
-			verify.printInfo($psprintf("Received %0d output bits", rx_data_output_cnt));
-		end
-		signals.addRxBitstream(ofdm_rx_if.rx_rcv_data);
-		rx_data_output_cnt += 2;
-	end
-
-	// Process which collects the rx symbols
-	always @(posedge rx_symbols_valid) begin
-		signals.addModSymbol(signed'(rx_symbols_i), signed'(rx_symbols_q));
-	end
-
-	// Process for generating the RX data strobe
+	// Process for all signals sensitive to the sys_clk
 	always @(posedge sys_clk) begin
 		rx_data_strobe = 0;
 		if (sys_rstn == 0) begin
 			rx_data_strobe_cnt = 0;
 		end else begin
+			// Generate the RX input data strobe
 			rx_data_strobe_cnt++;
 			if (rx_data_strobe_cnt == 25) begin
 				rx_data_strobe = 1;
 				rx_data_strobe_cnt = 0;
+			end
+			// Collect the RX output bitstream
+			if (ofdm_rx_if.rx_rcv_data_valid) begin
+				if (rx_data_output_cnt % raw_symbol_length_g == 0 && rx_data_output_cnt != 0) begin
+					verify.printInfo($psprintf("Received %0d output bits", rx_data_output_cnt));
+				end
+				signals.addRxBitstream(ofdm_rx_if.rx_rcv_data);
+				rx_data_output_cnt += 2;
+			end
+			// Collect the RX output symbols
+			if (rx_symbols_valid) begin
+				signals.addModSymbol(signed'(rx_symbols_i), signed'(rx_symbols_q));
 			end
 		end
 	end
