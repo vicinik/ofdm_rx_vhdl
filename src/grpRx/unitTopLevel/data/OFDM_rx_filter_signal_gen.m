@@ -59,7 +59,7 @@ for j=1:NumberOfSymbols
 end
 
 % Set the unused subcarriers to 0
-% ModulationSymbols(NumberOfBits/4:NumberOfBits/4*3) = 0;
+ModulationSymbols(NumberOfSymbols/4+1:NumberOfSymbols/4*3) = 0;
 
 % OFDM Tx
 % We calculate the IFFT and add some GuardChips at the beginning of the
@@ -82,7 +82,7 @@ allTxModSymbols = [allTxModSymbols; ModulationSymbols];
 allExpIfft = [allExpIfft, exp_ifft];
 end
 
-if mean(allExpIfft) > -9.0
+if mean(allExpIfft) > -8.0
     fprintf('Skipping these symbols because of wrong exponent\n');
     continue;
 else
@@ -115,6 +115,8 @@ rx_in = double(rx_in).';
 rx_in_t = 0:1/FilterSR:(length(rx_in)-1)/FilterSR;
 
 rx_in = round(allTx*2^3);
+
+fprintf('max: %d, min: %d\n', max(real(rx_in)), min(real(rx_in)));
 
 %plot(rx_in_t, rx_in)
 dlmwrite(sprintf('rx_in_signal%i.csv', l-1), [real(rx_in), imag(rx_in)], 'precision', '%i')

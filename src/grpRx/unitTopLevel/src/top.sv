@@ -9,7 +9,7 @@ module top;
 	parameter raw_symbol_length_c = 256;
 	parameter sample_bit_width_c = 12;
 	parameter osr_c = 4;
-	parameter fft_exp_c = 6;
+	parameter fft_exp_c = 5;
 	parameter coarse_alignment_level_c = 11000;  //32064;
 	logic sys_clk = 0, sys_rstn;
 	
