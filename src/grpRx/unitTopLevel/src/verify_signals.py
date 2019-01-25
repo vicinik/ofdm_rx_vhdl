@@ -4,6 +4,8 @@ import ast
 
 try:
     import numpy as np
+    import matplotlib
+    matplotlib.use('agg')
     from matplotlib import pyplot as plt
 except:
     exitMsgCode('You need to install the Python modules numpy and matplotlib (pip install numpy matplotlib)', 1)

@@ -70,9 +70,9 @@ module TbTbdOfdmRx #(
 
 	// Task for verifying the output signals
 	task verifyOutputSignals(input string rx_in_file, input int idx);
-		automatic string result_file = "output_signals.log";
+		automatic string result_file = $psprintf("output_signals%0d.log", idx);
 		automatic string python_file = "../src/verify_signals.py";
-		automatic string python_log_file = "python.log";
+		automatic string python_log_file = $psprintf("python_output%0d.log", idx);
 		automatic string plot_file = $psprintf("scatter_plot%0d.png", idx);
 		automatic string python_message;
 		automatic int retcode = 0;
