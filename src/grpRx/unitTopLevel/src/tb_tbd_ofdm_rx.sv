@@ -24,7 +24,6 @@ module TbTbdOfdmRx #(
 	logic[sample_bit_width_g-1:0] rx_symbols_i;
 	logic[sample_bit_width_g-1:0] rx_symbols_q;
 	logic rx_symbols_valid;
-	logic rx_symbols_start;
 
 	// Instantiations
 	Verification verify = new(us);
@@ -35,7 +34,6 @@ module TbTbdOfdmRx #(
 		$init_signal_spy("/top/tbd_ofdm_rx/rx_symbols_i_v", "/top/tb_tbd_ofdm_rx/rx_symbols_i");
 		$init_signal_spy("/top/tbd_ofdm_rx/rx_symbols_q_v", "/top/tb_tbd_ofdm_rx/rx_symbols_q");
 		$init_signal_spy("/top/tbd_ofdm_rx/rx_symbols_valid_v", "/top/tb_tbd_ofdm_rx/rx_symbols_valid");
-		$init_signal_spy("/top/tbd_ofdm_rx/rx_symbols_start_v", "/top/tb_tbd_ofdm_rx/rx_symbols_start");
 	endtask;
 
 	// Task for resetting all output signals
@@ -71,10 +69,11 @@ module TbTbdOfdmRx #(
 	endtask
 
 	// Task for verifying the output signals
-	task verifyOutputSignals(input string rx_in_file, input string rx_bit_file, input string plot_file);
+	task verifyOutputSignals(input string rx_in_file, input int idx);
 		automatic string result_file = "output_signals.log";
 		automatic string python_file = "../src/verify_signals.py";
 		automatic string python_log_file = "python.log";
+		automatic string plot_file = $psprintf("scatter_plot%0d.png", idx);
 		automatic string python_message;
 		automatic int retcode = 0;
 		automatic int fd = 0;
@@ -82,7 +81,7 @@ module TbTbdOfdmRx #(
 		// Write a file with the output modulation symbols and the output bitstream
 		signals.writeResultFile(result_file);
 		// Now we call a python script which calculates the BER and writes a scatter plot
-		retcode = $system($psprintf("python %s --bit_file=%s --result_file=%s --plot_file=%s > %s", python_file, rx_bit_file, result_file, plot_file, python_log_file));
+		retcode = $system($psprintf("python %s --signal_idx=%0d --result_file=%s --plot_file=%s > %s", python_file, idx, result_file, plot_file, python_log_file));
 		if (retcode == 0) begin
 			fd = $fopen(python_log_file, "r");
 			if (!fd) begin
@@ -99,7 +98,7 @@ module TbTbdOfdmRx #(
 
 		// Return code evaluation
 		if (retcode == 0) begin
-			verify.printInfo($psprintf("Validation successful: %s", python_message));
+			verify.printSuccess($psprintf("Validation successful: %s", python_message));
 			verify.printInfo($psprintf("Scatter plot file written: %s", plot_file));
 		end else if (retcode == 10) begin
 			verify.printError($psprintf("Validation not really successful: %s", python_message));
@@ -114,7 +113,6 @@ module TbTbdOfdmRx #(
 		automatic logic received_bitstream = 0;
 		automatic string rx_in_file = $psprintf("../data/rx_in_signal%0d.csv", idx);
 		automatic string rx_bit_file = $psprintf("../data/result_bits%0d.csv", idx);
-		automatic string plot_file = $psprintf("scatter_plot%0d.png", idx);
 
 		initSystem();
 		verify.printSubHeader($psprintf("Testing RX chain with symbol sequence #%0d", idx));
@@ -143,7 +141,7 @@ module TbTbdOfdmRx #(
 		// If we received any output bitstream, we verify it
 		if (received_bitstream) begin
 			verify.printInfo("Verifying RX chain output");
-			verifyOutputSignals(rx_in_file, rx_bit_file, plot_file);
+			verifyOutputSignals(rx_in_file, idx);
 		end
 	endtask
 
@@ -162,7 +160,7 @@ module TbTbdOfdmRx #(
 			// Collect the RX output bitstream
 			if (ofdm_rx_if.rx_rcv_data_valid) begin
 				if (rx_data_output_cnt % raw_symbol_length_g == 0 && rx_data_output_cnt != 0) begin
-					verify.printInfo($psprintf("Received %0d output bits", rx_data_output_cnt));
+					verify.printInfo($psprintf("Received %4d of %4d output bits", rx_data_output_cnt, $size(signals.output_signal)));
 				end
 				signals.addRxBitstream(ofdm_rx_if.rx_rcv_data);
 				rx_data_output_cnt += 2;

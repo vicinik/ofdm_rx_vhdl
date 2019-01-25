@@ -56,13 +56,16 @@ class SimulationSignals;
         $fclose(fd);
     endfunction
 
-    function void addModSymbol(input int mod_i, input int mod_q);
-        automatic int len = $size(rx_rcv_mod_symbols_i);
+    local function void addSymbol(input int sym_i, input int sym_q, inout int symbols_i[], inout int symbols_q[]);
+        automatic int len = $size(symbols_i);
+        symbols_i = new[len+1](symbols_i);
+        symbols_q = new[len+1](symbols_q);
+        symbols_i[len] = sym_i;
+        symbols_q[len] = sym_q;
+    endfunction
 
-        rx_rcv_mod_symbols_i = new[len+1](rx_rcv_mod_symbols_i);
-        rx_rcv_mod_symbols_q = new[len+1](rx_rcv_mod_symbols_q);
-        rx_rcv_mod_symbols_i[len] = mod_i;
-        rx_rcv_mod_symbols_q[len] = mod_q;
+    function void addModSymbol(input int sym_i, input int sym_q);
+        addSymbol(sym_i, sym_q, rx_rcv_mod_symbols_i, rx_rcv_mod_symbols_q);
     endfunction;
 
     function void addRxBitstream(input logic bitstream[1:0]);
@@ -73,7 +76,7 @@ class SimulationSignals;
         rx_rcv_bitstream[len+1] = bitstream[1];
     endfunction;
 
-    function void dumpVectorInt(input int fd, input int vector[]);
+    local function void dumpVectorInt(input int fd, input int vector[]);
         automatic int len = $size(vector);
 
         $fwrite(fd, "[");
@@ -86,7 +89,7 @@ class SimulationSignals;
         $fwrite(fd, "]\n");
     endfunction;
 
-    function void dumpVectorLogic(input int fd, input logic vector[]);
+    local function void dumpVectorLogic(input int fd, input logic vector[]);
         automatic int len = $size(vector);
 
         $fwrite(fd, "[");

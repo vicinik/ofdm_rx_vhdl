@@ -9,7 +9,7 @@ PhaseCorrSR = 40e6;
 BaseRatio = FilterSR/BaseSR;
 PhaseCorrRatio = PhaseCorrSR/FilterSR;
 SourceBitRate = 100e6;
-AWGNGain = 0.;
+TxShiftExponent = 3;
 
 NumberOfGuardChips = BaseRatio*32;
 NumberOfSymbols = BaseRatio*128;
@@ -26,10 +26,10 @@ l = 0;
 while l < NumberOfFiles
 allTx = [];
 allTxBits = [];
-allRxBits = [];
 allTxModSymbols = [];
 allRxModSymbols = [];
 allExpIfft = [];
+allRxChips = [];
 
 for k=1:NumberOfRuns
 
@@ -69,12 +69,6 @@ ModulationSymbols(NumberOfSymbols/4+1:NumberOfSymbols/4*3) = 0;
 GuardChips=TxChips(NumberOfSymbols-NumberOfGuardChips+1:end);
 TxAntennaChips=[GuardChips, TxChips].';
 
-% AWGN Channel
-% We add some white gaussion noise to simulate the transmission losses.
-AWGN=AWGNGain*randn(length(TxAntennaChips),1)+1i*AWGNGain*randn(length(TxAntennaChips),1);
-AWGN_Scaled=AWGN*2^(15 + exp_ifft(1)); % Scaling of the AWGN
-TxAntennaChips=TxAntennaChips+AWGN_Scaled;
-
 % Cut out the unused bits
 allTxBits = [allTxBits; TxBits(1:NumberOfBits/4); TxBits(NumberOfBits/4*3+1:end)];
 allTx = [allTx; TxAntennaChips];
@@ -89,39 +83,41 @@ else
     l = l + 1;
 end
 
-%% TX Filter
-% In this section, we add a synchronization symbol,
-% up-sample the generated Tx Chips and send them
-% through a TX filter.
+exp_ifft_s = round(mean(allExpIfft) + TxShiftExponent);
 
-% Add a synchronization symbol (Schmiedl's Method)
-SyncSymbol = randn(NumberOfSyncSamples, 1)*2^6 + 1i*randn(NumberOfSyncSamples, 1)*2^6;
-allTx = [SyncSymbol; SyncSymbol; allTx];
-allTx_t = 0:1/(FilterSR):(length(allTx)-1)/FilterSR;
-tx_in = allTx;
-
-% TX filter
-factor = 8;
-tx_out=factor*filter(AD9361_Tx_Filter_object, tx_in);
-tx_out_t=[0:1/(factor*FilterSR):(length(tx_out)-1)/(factor*FilterSR)];
-
-%% RX Filter
-% In this section, we first filter the Tx out signal with the Rx filter and
-% write the generated signal to a CSV file.
-
-% RX filtering
-rx_in = filter(AD9361_Rx_Filter_object, tx_out);
-rx_in = double(rx_in).';
-rx_in_t = 0:1/FilterSR:(length(rx_in)-1)/FilterSR;
-
-rx_in = round(allTx*2^3);
-
-fprintf('max: %d, min: %d\n', max(real(rx_in)), min(real(rx_in)));
-
-%plot(rx_in_t, rx_in)
-dlmwrite(sprintf('rx_in_signal%i.csv', l-1), [real(rx_in), imag(rx_in)], 'precision', '%i')
+% Write bits to file
 csvwrite(sprintf('result_bits%i.csv', l-1), allTxBits)
 
-fprintf('Finished #%i, Exponent: %f\n', l-1, mean(allExpIfft)+3);
+%% Add synchronization symbol
+% Add a synchronization symbol (Schmiedl's Method)
+SyncSymbol = randn(NumberOfSyncSamples, 1)*2^6 + 1i*randn(NumberOfSyncSamples, 1)*2^6;
+rx_in = round([SyncSymbol; SyncSymbol; allTx]*2^TxShiftExponent);
+allTx = round(allTx*2^TxShiftExponent);
+
+fprintf('Max: %d, Min: %d\n', max(real(rx_in)), min(real(rx_in)));
+% Write RX signal to file
+dlmwrite(sprintf('rx_in_signal%i.csv', l-1), [real(rx_in), imag(rx_in)], 'precision', '%i')
+
+%% CP removal and FFT
+for k=1:NumberOfRuns
+% Cut out the CP and the relevant symbols for this run
+lower = (k-1)*NumberOfSymbols + k*NumberOfGuardChips + 1;
+upper = k*NumberOfSymbols + k*NumberOfGuardChips;
+RxChips=allTx(lower:upper).';
+
+% Calculate FFT
+[RxModSymbols, exp_fft]=fft_hw(RxChips, NumberOfSymbols, 0);
+% Cut out not used symbols
+RxModSymbols = [RxModSymbols(1:NumberOfSymbols/4), RxModSymbols(NumberOfSymbols/4*3+1:end)];
+RxModSymbols = RxModSymbols*2^(-exp_ifft_s-exp_fft(1))*(1/NumberOfSymbols);
+
+allRxChips = [allRxChips, RxChips];
+allRxModSymbols = [allRxModSymbols, RxModSymbols];
+end
+
+dlmwrite(sprintf('cp_removal_signal%i.csv', l-1), [real(allRxChips); imag(allRxChips)], 'precision', '%i')
+dlmwrite(sprintf('fft_signal%i.csv', l-1), [real(allRxModSymbols); imag(allRxModSymbols)], 'precision', '%i')
+
+fprintf('Finished #%i, Exponent: %f\n', l-1, exp_ifft_s);
 
 end
