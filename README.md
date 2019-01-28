@@ -19,4 +19,4 @@ Just call the script `start_rx_simulation.bat <command>` where `command` is one 
 There is also a bash script `start_rx_simulation.sh` with the same name and commands.
 
 ### Simulation Artifacts
-The simulation will generate a scatter plot of the modulation symbols using a Python script. The plot contains the BER and EVM values and can be found at `src/grpRx/unitTopLevel/sim/scatter_plot#.png`, where `#` is the number of the symbol sequence processed. The plot is only available when the simulation of one symbol sequence is finished. Pay attention to the console output of Modelsim/Questa in order to obtain the current simulation status!
+The simulation will generate a scatter plot of the modulation symbols using a Python script. The plot contains the BER and EVM values and can be found at `src/grpRx/unitTopLevel/sim/scatter_plot#.png`, where `#` is the number of the symbol sequence processed. The plot is only available when the simulation of one symbol sequence is finished. **Pay attention to the console output** of Modelsim/Questa in order to obtain the current simulation status and result of the verification.
