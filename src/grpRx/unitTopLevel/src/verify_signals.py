@@ -110,9 +110,10 @@ def main():
     plt.xlabel('Inphase'), plt.ylabel('Quadrature')
     plt.scatter(np.real(rx_symbols_py[sym_range]), np.imag(rx_symbols_py[sym_range]), c='black', marker='x')
     plt.subplot(1, 2, 2)
-    plt.title('[VHDL]   BER: {:.3f}, EVM: {:.3f} dB'.format(ber, evm), fontsize=9), plt.grid()
+    plt.title('[VHDL] BER: {:.3f}, EVM: {:.3f} dB'.format(ber, evm), fontsize=9), plt.grid()
     plt.xlabel('Inphase'), plt.ylabel('Quadrature')
     plt.scatter(np.real(rx_symbols_out[sym_range]), np.imag(rx_symbols_out[sym_range]), c='black', marker='x')
+    plt.show()
     plt.savefig(plot_file)
 
     # Return code and message
