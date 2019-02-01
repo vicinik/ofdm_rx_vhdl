@@ -200,6 +200,9 @@ begin
 				if regCoarse.PrevPValue.I > regPValue.I then
 					nextRegCoarse.State <= CoarseAlignmentDone;
 					rx_data_coarse_start_o <= '1';
+					rx_data_coarse_valid_o <= '1';
+					rx_data_i_coarse_o <= rx_data_i_osr_i;
+					rx_data_q_coarse_o <= rx_data_q_osr_i;
 				end if;
 			-- wait if the current symbol at the high rate is done
 			when WaitOnSymbolFinished =>
