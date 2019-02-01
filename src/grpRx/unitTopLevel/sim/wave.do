@@ -27,7 +27,7 @@ add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_osr_valid_i
 add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/offset_inc_i
 add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/offset_dec_i
 add wave -noupdate -radix unsigned /top/tbd_ofdm_rx/coarse_alignment_inst/min_level_i
-add wave -noupdate -childformat {{/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I -radix decimal}} -expand -subitemconfig {/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I {-format Analog-Step -height 74 -max 2466931406.0 -min -333537.0 -radix decimal}} /top/tbd_ofdm_rx/coarse_alignment_inst/regPValue
+add wave -noupdate -childformat {{/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I -radix decimal}} -expand -subitemconfig {/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I {-format Analog-Step -height 74 -max 6860179999.0 -min -333537.0 -radix decimal}} /top/tbd_ofdm_rx/coarse_alignment_inst/regPValue
 add wave -noupdate -radix decimal /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_i_coarse_o
 add wave -noupdate -radix decimal /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_q_coarse_o
 add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_coarse_valid_o

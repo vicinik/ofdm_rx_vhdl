@@ -18,8 +18,13 @@ then
     rm -rf *.vstf
     rm -rf *.log
     rm -rf *.png
+    rm -rf *.csv
 else
     echo "You need to specify the mode: $0 <cmd|gui|clean>"
+    echo "---"
+    echo "cmd: Runs the simulation in command line mode"
+    echo "gui: Runs the simulation in GUI mode (useful for wave debugging)"
+    echo "clean: Cleans all the simulation artifacts"
 fi
 
 popd

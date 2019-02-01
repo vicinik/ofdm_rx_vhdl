@@ -8,6 +8,7 @@ module top;
 	parameter symbol_length_c = 320;
 	parameter raw_symbol_length_c = 256;
 	parameter sample_bit_width_c = 12;
+	parameter sequence_length_c = 20;
 	parameter osr_c = 4;
 	parameter fft_exp_c = 5;
 	parameter coarse_alignment_level_c = 11000;  //32064;
@@ -40,7 +41,8 @@ module top;
 		sample_bit_width_c,
 		symbol_length_c,
 		raw_symbol_length_c,
-		coarse_alignment_level_c
+		coarse_alignment_level_c,
+		sequence_length_c
 	) tb_tbd_ofdm_rx(
 		sys_clk,
 		sys_rstn,

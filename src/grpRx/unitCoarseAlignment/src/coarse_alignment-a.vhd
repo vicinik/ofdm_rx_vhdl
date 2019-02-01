@@ -4,7 +4,7 @@ use work.LogDualisPack.all;
 architecture Rtl of CoarseAlignment is
 	-- constants
 	constant cBufferLength : natural := (symbol_length_g * 2**(osr_g)) / 2;
-	constant cResultValueLength : natural := 33;
+	constant cResultValueLength : natural := 36;
 	constant cMaxOffsetCounter : natural := 2**(osr_g) - 1;
 	
 	-- type definitions	

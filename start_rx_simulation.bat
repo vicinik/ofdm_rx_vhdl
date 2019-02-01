@@ -15,8 +15,14 @@ if "%1"=="cmd" (
     del /q *.vstf
     del /q *.log
     del /q *.png
+    del /q *.csv
 ) else (
     echo You need to specify the mode: %0 ^<cmd^|gui^|clean^>
+    echo ---
+    echo cmd: Runs the simulation in command line mode
+    echo gui: Runs the simulation in GUI mode ^(useful for wave debugging^)
+    echo clean: Cleans all the simulation artifacts
+    echo.
     pause
 )
 
