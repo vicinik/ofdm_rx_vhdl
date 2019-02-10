@@ -4,13 +4,13 @@ use work.LogDualisPack.all;
 architecture Rtl of CoarseAlignment is
 	-- constants
 	constant cBufferLength : natural := (symbol_length_g * 2**(osr_g)) / 2;
-	constant cResultValueLength : natural := 36;
+	constant cResultValueLength : natural := 35;
 	constant cMaxOffsetCounter : natural := 2**(osr_g) - 1;
 	
 	-- type definitions	
 	type aState is (Init, ThresholdDetection, PeakDetection, WaitOnSymbolFinished, CoarseAlignmentDone);
 	type aSampleMemory is array (0 to cBufferLength - 1) of std_ulogic_vector(2*sample_bit_width_g - 1 downto 0);
-	type aCorrelationMemory is array (0 to cBufferLength - 1) of std_ulogic_vector(2*sample_bit_width_g - 1 downto 0);
+	type aCorrelationMemory is array (0 to cBufferLength - 1) of std_ulogic_vector(4*sample_bit_width_g - 1 downto 0);
 	
 	type aComplexSample is record
 		I : signed(sample_bit_width_g - 1 downto 0);
@@ -19,12 +19,12 @@ architecture Rtl of CoarseAlignment is
 	
 	type aPInterimValue is record
 		I : signed(2*sample_bit_width_g - 1 downto 0);
-		--Q : signed(2*sample_bit_width_g - 1 downto 0);
+		Q : signed(2*sample_bit_width_g - 1 downto 0);
 	end record;
 		
 	type aPValue is record
 		I : signed(cResultValueLength - 1 downto 0);
-		--Q : signed(cResultValueLength - 1 downto 0);
+		Q : signed(cResultValueLength - 1 downto 0);
 	end record;
 	
 	type aCoarseAlignmentReg is record
@@ -47,8 +47,8 @@ architecture Rtl of CoarseAlignment is
 	constant cInitPInterim : aPInterimValue := (others => (others => '0'));
 	
 	constant cInitPValue : aPValue := (
-		I => (others => '0')
-		--Q => (others => '0')
+		I => (others => '0'),
+		Q => (others => '0')
 	);
 	
 	constant cInitCoarseReg : aCoarseAlignmentReg := (
@@ -72,8 +72,8 @@ architecture Rtl of CoarseAlignment is
 	
 	signal rdm : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q signal to circulat buffer
 	signal rdmL : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q signal from circular buffer	
-	signal pInterim : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q part of correlation interim result
-	signal pInterimL : std_ulogic_vector(2*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q part of correlation interim result
+	signal pInterim : std_ulogic_vector(4*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q part of correlation interim result
+	signal pInterimL : std_ulogic_vector(4*sample_bit_width_g - 1 downto 0) := (others => '0'); -- I,Q part of correlation interim result
 	
 	signal regPInterim : aPInterimValue := (others => (others => '0')); -- register for interim result of correlation
 	signal regValid : std_ulogic := '0'; -- delay valid for correlation result buffer
@@ -85,13 +85,13 @@ architecture Rtl of CoarseAlignment is
 begin
 	
 		-- hardware implementation of schmidl cox algorithmn
-	SchmidlCox: process (sys_clk_i, sys_rstn_i) is	
+	SchmidlCox: process (sys_clk_i, sys_rstn_i, sys_init_i) is	
 		variable vRdm : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- current I,Q value at input
 		variable vRdmL : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- delayed I,Q value		
-		variable vPInterim : aPInterimValue := (I => (others => '0'));--, Q => (others => '0')); -- I,Q part of correlation interim result
-		variable vPInterimL : aPInterimValue := (I => (others => '0'));--, Q => (others => '0')); -- I,Q part of correlation interim result
+		variable vPInterim : aPInterimValue := (I => (others => '0'), Q => (others => '0')); -- I,Q part of correlation interim result
+		variable vPInterimL : aPInterimValue := (I => (others => '0'), Q => (others => '0')); -- I,Q part of correlation interim result
 	begin	
-		if (sys_rstn_i = '0') then
+		if (sys_rstn_i = '0') or (sys_init_i = '1') then
 			regPInterim <= cInitPInterim;
 			regValid <= '0';
 			regPValue <= cInitPValue;			
@@ -102,13 +102,13 @@ begin
 		elsif (rising_edge(sys_clk_i)) then		
 			vRdm := (I => signed(rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdm(sample_bit_width_g - 1 downto 0))); -- current I,Q samples			
 			vRdmL := (I => signed(rdmL((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdmL(sample_bit_width_g - 1 downto 0))); -- delayed I,Q samples			
-			vPInterimL := (I => signed(pInterimL)); -- delayed correlation results		
+			vPInterimL := (I => signed(pInterimL(4*sample_bit_width_g - 1 downto 2*sample_bit_width_g)), Q => signed(pInterimL(2*sample_bit_width_g - 1 downto 0))); -- delayed correlation results		
 			regValid <= rx_data_osr_valid_i; -- store valid signal for next stage
 		
 			-- complex multipilcation
 			if (rx_data_osr_valid_i = '1') then
 				regPInterim.I <= (vRdm.I * vRdmL.I) - (-vRdm.Q * vRdmL.Q);
-				--regPInterim.Q <= (-vRdm.Q * vRdmL.I) + (vRdm.I * vRdmL.Q);			
+				regPInterim.Q <= (vRdm.Q * vRdmL.I) - (vRdm.I * vRdmL.Q);			
 			
 				regWriteIdxSamples <= regWriteIdxSamples + 1;
 				regReadIdxSamples <= regReadIdxSamples + 1;
@@ -125,6 +125,7 @@ begin
 			-- accumulation of p signal
 			if (regValid = '1') then
 				regPValue.I <= regPValue.I + (regPInterim.I - vPInterimL.I);
+				regPValue.Q <= regPValue.Q + (regPInterim.Q - vPInterimL.Q);
 				
 				regWriteIdxCorrelation <= regWriteIdxCorrelation + 1;
 				regReadIdxCorrelation <= regReadIdxCorrelation + 1;
@@ -139,12 +140,11 @@ begin
 			end if;
 			
 			-- init of p value
-			if (sys_init_i = '1') then
-				regPValue.I <= (others => '0');
-			end if;
+			--if (sys_init_i = '1') then
+			--	regPValue.I <= (others => '0');
+			--end if;
 		end if;			
 	end process;
-	pInterim <= std_ulogic_vector(regPInterim.I);
 	
 	-- register process to store all needed states and values
 	RegisterProcess: process (sys_clk_i, sys_rstn_i) is
@@ -258,9 +258,12 @@ begin
 	rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g) <= std_ulogic_vector(rx_data_i_osr_i);
 	rdm(sample_bit_width_g - 1 downto 0) <= std_ulogic_vector(rx_data_q_osr_i);	
 	
-	SampleMemory: process (sys_clk_i) is
+	SampleMemory: process (sys_clk_i, sys_init_i) is
 	begin
-		if (rising_edge(sys_clk_i)) then
+		if (sys_init_i = '1') then
+			sampleBuffer <= (others => (others => '0'));
+			rdmL <= (others => '0');
+		elsif (rising_edge(sys_clk_i)) then
 			if (rx_data_osr_valid_i = '1') then
 				sampleBuffer(to_integer(regWriteIdxSamples)) <= rdm;
 			end if;		
@@ -268,9 +271,15 @@ begin
 		end if;
 	end process;
 	
-	CorrelationMemory: process (sys_clk_i) is
+	pInterim((4*sample_bit_width_g - 1) downto (2*sample_bit_width_g)) <= std_ulogic_vector(regPInterim.I);
+	pInterim((2*sample_bit_width_g - 1) downto 0) <= std_ulogic_vector(regPInterim.Q);
+	
+	CorrelationMemory: process (sys_clk_i, sys_init_i) is
 	begin
-		if (rising_edge(sys_clk_i)) then
+		if (sys_init_i = '1') then
+			correlationBuffer <= (others => (others => '0'));
+			pInterimL <= (others => '0');
+		elsif (rising_edge(sys_clk_i)) then
 			if (regValid = '1') then
 				correlationBuffer(to_integer(regWriteIdxCorrelation)) <= pInterim;
 			end if;
