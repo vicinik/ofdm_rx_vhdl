@@ -5,8 +5,9 @@ global k;
 %% settings
 storeToFile = true;
 upsampling = true;
-NumberIterations = 100;
-TrainingsSymbolPosition = 2;
+NumberIterations = 13;
+TrainingsSymbolPosition = [2 7 10];
+TrainingsSequence = []
 
 NumberOfSubcarrier = 128;
 NumberOfGuardChips = 32;
@@ -66,14 +67,18 @@ for k=1:NumberIterations
     GuardChips = TxChips(NumberOfSubcarrier - NumberOfGuardChips + 1:end);
     TxAntennaChips = [GuardChips; TxChips];
     
-    if k == TrainingsSymbolPosition
-        re = -0.5 + rand((NumberOfChips)/2, 1);
-        im = -0.5 + rand((NumberOfChips)/2, 1);
-        
-        TxAntennaChips(1:(NumberOfChips)/2) = re + 1i*im;
-        TxAntennaChips((NumberOfChips/2)+1:NumberOfChips) = ...
-            TxAntennaChips(1:NumberOfChips/2);
-        TrainingsSequence = TxAntennaChips;
+    if ~isempty(TrainingsSymbolPosition(TrainingsSymbolPosition == k))
+        if isempty(TrainingsSequence)
+            re = -0.5 + rand((NumberOfChips)/2, 1);
+            im = -0.5 + rand((NumberOfChips)/2, 1);
+
+            TxAntennaChips(1:(NumberOfChips)/2) = re + 1i*im;
+            TxAntennaChips((NumberOfChips/2)+1:NumberOfChips) = ...
+                TxAntennaChips(1:NumberOfChips/2);
+            TrainingsSequence = TxAntennaChips;
+        else
+            TxAntennaChips = TrainingsSequence; 
+        end
     end
     allTxAntennaChips = [allTxAntennaChips; TxAntennaChips];
     
@@ -155,7 +160,7 @@ for i=1:length(allTx)-NumberOfChips*(2^osr)
     ptabL_q = imag(fifo_m(1));
     
     ptab_i = (rdm_i * rdmL_i) - (-rdm_q * rdmL_q);
-    ptab_q = (-rdm_q * rdmL_i) + (rdm_i * rdmL_q);
+    ptab_q = (rdm_q * rdmL_i) + (rdm_i * -rdmL_q);
     
     if i == 1
         P_iter(i) = complex(ptab_i - ptabL_i, ptab_q - ptabL_q);
@@ -172,36 +177,38 @@ end
 
 M_iter = (abs(P_iter).^2) ./ (R_iter.^2);
 
-% plot p-signal
+% plot p-signal sum
 figure(1);
+subplot(211);
 plot(0:length(P_iter)-1, real(P_iter))
 grid on
 hold on
 plot(0:length(P_iter)-1, imag(P_iter))
-title('Coarse Alignment P-Signal')
+title('Coarse Alignment Iter')
+xlabel('\rightarrow #Samples')
+ylabel('\rightarrow Time metric')
+legend('real', "imag")
+
+% plot p-signal iterative
+subplot(212);
+plot(0:length(P)-1, real(P))
+grid on
+hold on
+plot(0:length(P)-1, imag(P))
+title('Coarse Alignment Sum')
 xlabel('\rightarrow #Symbols')
 ylabel('\rightarrow Time metric')
 legend('real', "imag")
 
-
 % plot timing metric
-figure(2);
+figure(3);
 plot(0:length(P)-1, real(M))
 grid on
 hold on
 plot(0:length(P_iter)-1, real(M_iter))
-title('Coarse Alignment S-Signal')
+title('Coarse Alignment Timing metric')
 xlabel('\rightarrow #Symbols')
 ylabel('\rightarrow Time metric')
 legend('Time metric', "Time metric iterativ")
 
-% plot abs value
-figure(3);
-plot(0:length(P_iter)-1, abs(P_iter))
-grid on
-hold on
-title('Coarse Alignment P-Signal')
-xlabel('\rightarrow #Symbols')
-ylabel('\rightarrow Time metric')
-legend('abs')
     

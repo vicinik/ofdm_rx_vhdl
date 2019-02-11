@@ -157,9 +157,9 @@ def sim_transmitter(num_symbols, bit_width, sequence_len):
     all_tx_symbols = np.round(all_tx_symbols*2**3)
 
     # Generate and append the synchronization symbol (Schmidl's method)
-    # It turns out, that a sawtooth signal has a very good peak
+    # It turns out, that a rectangle signal has a very good peak
     s_sym_len = int((num_symbols+num_symbols/4)/2)
-    s_sym_par = np.arange(0, s_sym_len) * (1/s_sym_len) * 2**11
+    s_sym_par = np.ones(s_sym_len) * 1000
     sync_symbol = s_sym_par + s_sym_par*1j
     all_tx_symbols = np.concatenate((sync_symbol, sync_symbol, all_tx_symbols))
 

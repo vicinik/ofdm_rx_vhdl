@@ -11,7 +11,7 @@ module top;
 	parameter sequence_length_c = 20;
 	parameter osr_c = 4;
 	parameter fft_exp_c = 5;
-	parameter coarse_alignment_level_c = 11000;  //32064;
+	parameter coarse_alignment_level_c = 18000;
 	logic sys_clk = 0, sys_rstn;
 	
 	// Clk generator

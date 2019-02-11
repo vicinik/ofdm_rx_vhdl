@@ -27,7 +27,8 @@ add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_osr_valid_i
 add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/offset_inc_i
 add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/offset_dec_i
 add wave -noupdate -radix unsigned /top/tbd_ofdm_rx/coarse_alignment_inst/min_level_i
-add wave -noupdate -childformat {{/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I -radix decimal}} -expand -subitemconfig {/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I {-format Analog-Step -height 74 -max 6860179999.0 -min -333537.0 -radix decimal}} /top/tbd_ofdm_rx/coarse_alignment_inst/regPValue
+add wave -noupdate -radix decimal /top/tbd_ofdm_rx/coarse_alignment_inst/regCoarse.Threshold
+add wave -noupdate -childformat {{/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I -radix decimal} {/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.Q -radix decimal}} -expand -subitemconfig {/top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.I {-format Analog-Step -height 150 -max 6860180000.0 -min -6860180000.0 -radix decimal} /top/tbd_ofdm_rx/coarse_alignment_inst/regPValue.Q {-format Analog-Step -height 150 -max 686018000.0 -min -686018000.0 -radix decimal}} /top/tbd_ofdm_rx/coarse_alignment_inst/regPValue
 add wave -noupdate -radix decimal /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_i_coarse_o
 add wave -noupdate -radix decimal /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_q_coarse_o
 add wave -noupdate /top/tbd_ofdm_rx/coarse_alignment_inst/rx_data_coarse_valid_o
@@ -71,7 +72,7 @@ add wave -noupdate /top/tbd_ofdm_rx/demodulation_inst/rx_rcv_data_o
 add wave -noupdate /top/tbd_ofdm_rx/demodulation_inst/rx_rcv_data_valid_o
 add wave -noupdate /top/tbd_ofdm_rx/demodulation_inst/rx_rcv_data_start_o
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1840715000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -87,4 +88,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1200786276 ps} {1341295460 ps}
+WaveRestoreZoom {0 ps} {2772110250 ps}
