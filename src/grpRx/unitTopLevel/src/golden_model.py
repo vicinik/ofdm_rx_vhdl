@@ -76,7 +76,7 @@ def interp_taylor_part(symbols, oversampling, offset=0):
 
     return np.round(y)
 
-def interp_taylor(symbols, oversampling, offset=0):
+def interp_taylor_complex(symbols, oversampling, offset=0):
     """
     Interpolates a complex signal with Taylor's method.
     """
@@ -88,18 +88,22 @@ def coarse_align(symbols, num_symbols, oversampling):
     """
     Coarse Alignment: Calculates the auto correlation and finds the max peak.
     """
-    l = int((num_symbols/2)*oversampling)
+    l = int(((num_symbols+num_symbols/4)/2)*oversampling)
     C = []
     for i in range(l*6):
         C.append(np.sum(np.dot(symbols[i:i+l], np.conj(symbols[i+l:i+2*l]))))
     idx = np.argmax(np.real(C)) + 2*l
     return symbols[idx:], idx
 
-def generate_rx_modulation_symbols(symbols, num_symbols):
+def generate_rx_modulation_symbols(symbols, num_symbols, bit_width):
     """
     Generates the RX modulation symbols and bits.
     """
     mod_symbols = np.round(np.fft.fft(symbols)*2**(-3))
+    # Add some 'quantization' noise (in order to simulate hardware FFT)
+    n_r = 0.03
+    mod_symbols += np.random.randint(int(-2**(bit_width-1)*n_r), int((2**(bit_width-1)-1))*n_r) + \
+        np.random.randint(int(-2**(bit_width-1)*n_r), int((2**(bit_width-1)-1))*n_r)*1j
     # Cut out unused subcarriers
     mod_symbols = np.concatenate((mod_symbols[0:int(num_symbols/4)], mod_symbols[int(num_symbols/4*3):]))
     bits = np.array([])
@@ -165,32 +169,28 @@ def sim_transmitter(num_symbols, bit_width, sequence_len):
 
     return all_tx_bits, all_tx_mod_symbols, all_tx_symbols
 
-def sim_receiver(tx_symbols, num_symbols, oversampling, sequence_len):
+def sim_receiver(tx_symbols, num_symbols, oversampling, sequence_len, bit_width):
     """
     Simulates the receiver part of the OFDM chain.
     """
     # Upsampling
-    rx_symbols = interp_taylor(tx_symbols, oversampling)
+    rx_symbols = interp_taylor_complex(tx_symbols, oversampling)
     # Coarse align and cut out the synchronization symbol
     all_rx_symbols, coarse_idx = coarse_align(rx_symbols, num_symbols, oversampling)
     all_rx_mod_symbols = np.array([])
     all_rx_bits = np.array([])
 
-    offset = 0; last_delta = 0; sync_done = False; cp_len = int(num_symbols/4)
+    offset = 0; cp_len = int(num_symbols/4)
     for i in range(sequence_len):
         b = int(i*(num_symbols+cp_len)*oversampling); e = int((i+1)*(num_symbols+cp_len)*oversampling)
         # Downsample one chip
-        rx_symbols_down = interp_taylor(all_rx_symbols[b:e], 1/oversampling, offset)
+        rx_symbols_down = interp_taylor_complex(all_rx_symbols[b:e], 1/oversampling, offset)
         # Remove cyclic prefix
         rx_symbols_down = rx_symbols_down[cp_len:]
         # Calculate FFT and detect if we should move the interpolation index
-        rx_mod_symbols, rx_bits, delta_offset = generate_rx_modulation_symbols(rx_symbols_down, num_symbols)
+        rx_mod_symbols, rx_bits, delta_offset = generate_rx_modulation_symbols(rx_symbols_down, num_symbols, bit_width)
         # Determine if the synchronization is done (phase is nearly horizontal)
-        if not sync_done:
-            offset = (offset + delta_offset) % oversampling
-            if delta_offset != last_delta and i != 0:
-                sync_done = True
-            last_delta = delta_offset
+        offset = (offset + delta_offset) if offset not in [0, oversampling-1] else offset
         all_rx_mod_symbols = np.append(all_rx_mod_symbols, rx_mod_symbols)
         all_rx_bits = np.append(all_rx_bits, rx_bits)
 
@@ -216,9 +216,11 @@ def main():
     coarse_idx = np.inf
 
     # Simulate a transmission
-    while (num_symbols+num_symbols/4)*oversampling < coarse_idx:
-        tx_bits, tx_mod_symbols, tx_symbols = sim_transmitter(num_symbols, bit_width, sequence_len)
-        rx_mod_symbols, rx_bits, coarse_idx = sim_receiver(tx_symbols, num_symbols, oversampling, sequence_len)
+    tx_bits, tx_mod_symbols, tx_symbols = sim_transmitter(num_symbols, bit_width, sequence_len)
+    rx_mod_symbols, rx_bits, coarse_idx = sim_receiver(tx_symbols, num_symbols, oversampling, sequence_len, bit_width)
+
+    # plt.scatter(np.real(rx_mod_symbols), np.imag(rx_mod_symbols))
+    # plt.show()
 
     # Write data files
     try:
