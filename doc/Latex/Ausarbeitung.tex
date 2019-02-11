@@ -1,0 +1,103 @@
+\include{Definitions}
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% Some constants for header, footer and tile page
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+% Format der Kopf-und Fußzeile
+\pagestyle{scrheadings}
+\clearscrheadfoot
+
+\ihead{\emph{FH Hagenberg / ESD}}
+\chead{\emph{On Chip Signal Processing}}
+\ohead{\emph{RTL Implementierung RX}}
+
+\ofoot{\emph{\thepage \ / \ \pageref{LastPage}}}
+
+\begin{document}  % Beginn des Textes
+
+\pretitle{%
+  \begin{center}
+  \LARGE
+  \includegraphics[scale=0.1]{../img/logo}\\[\bigskipamount]
+}
+\posttitle{\end{center}}
+
+\title{On Chip Signal Processing - RTL Implementierung RX}
+\subtitle{Sommersemester 2018}
+\author{Daniel Ferrari \\ Nikolaus Haminger \\ Florian Kitzer \\ Matthäus Kücher \\ Alexander Traxler}
+
+% Insert name and etc. into pdf
+%\begin{textblock*}{60mm}(45mm,58mm)
+%\firstname \ \lastname , \sfirstname \ \slastname
+%\end{textblock*}
+
+\maketitle % Titelseite erstellen
+%\includepdf[pages=-]{../spv_ue05.pdf}
+\tableofcontents
+
+\newpage
+
+\section{Übersicht}
+\subsection{Spezifikation}
+In diesem Projekt sollte eine OFDM-RX-Architektur in VHDL implementiert werden. Ein grobes Blockdiagramm dieser RX-Komponente war vorgegeben und ist in Abbildung \ref{fig:big_picture} sichtbar.
+
+\includepicture{../img/big_picture.png}{0.45}{big_picture}{Blockschaltbild der gesamten RX-Kette.}
+
+\subsection{Implementierung}
+Die Implementierung wurde weitgehend nach dem Vorbild des spezifizierten Blockschaltbildes vollzogen. Allerdings wird der Offset und das Delay in der Entity \emph{Coarse Alignment} gehandhabt, weshalb die beiden Leitungen \texttt{rx\_data\_delay} und \texttt{rx\_data\_offset} zwischen \emph{Interpolation} und \emph{Coarse Alignment} eliminiert wurden.
+
+\subsection{Toplevel-Simulation}
+Zur Verifikation der gesamten RX-Kette wurde eine Toplevel-Simulation erstellt. Für den Vergleich der Ergebnisse der Hardware-Kette wurde ein Golden Model in Python implementiert. Diese Implementierung berechnet die Input-Signale für die Hardware-Simulation (\texttt{rx\_data\_i}), speichert diese in CSV-Dateien ab und simuliert die gesamte RX-Kette in einer Hardware-ähnlichen Implementierung. Die Ergebnisse des Golden Models werden ebenfalls abgespeichert und am Ende der Hardware-Simulation mit eben jenen Ergebnissen verglichen. Außerdem werden \emph{BER} und \emph{EVM} berechnet sowie Konstellationdiagramme jeweils für beide Simulationen erstellt.
+
+\vspace{10pt}
+\noindent
+\textbf{Achtung}: Matlab wird nicht benötigt, da das gesamte Golden Model sowie die Verifikation in Python implementiert wurde (mit Fixed-Point-Repräsentation und Taylor-Approximation der Interpolation). Die Gründe für diese Maßnahme sind die bessere Performance von Python, die einfachere Interaktion aus der Modelsim-Simulation und die bessere Strukturierungsmöglichkeit des Codes.
+
+\subsubsection{Anleitung zur Toplevel-Simulation}
+Eine ausführliche Anleitung befinden sich in der \texttt{README.md} des Repositories. Hier kurz noch einmal zusammengefasst:
+
+\vspace{5pt}
+\noindent
+\textbf{Anforderungen}:
+\begin{itemize}
+\item Modelsim oder Questasim
+\item Python3 (https://www.python.org/downloads/)
+\item numpy und matplotlib (\texttt{pip install numpy matplotlib})
+\end{itemize}
+
+\vspace{5pt}
+\noindent
+\textbf{Ausführung}:\\
+Um die Simulation zu starten, einfach \texttt{start\_rx\_simulation.bat <cmd|gui|clean>} oder\\ \texttt{start\_rx\_simulation.sh <cmd|gui|clean>} im Root-Folder des Repositories ausführen.
+
+\subsubsection{Simulations-Output}
+Nachfolgend ist der Output einer Simulation von 3 unterschiedlichen RX-Sequenzen zu sehen.
+\includetextfile{sim_output.txt}
+
+\subsubsection{Konstellationsdiagramm}
+Abbildung \ref{fig:plot0} zeigt die Konstellationsdiagramme einer Symbol-Sequenz für die Golden-Model- und die Hardware-Simulation. Die Plots sind nach einer Simulation im Ordner\\ \texttt{src/grpRx/unitTopLevel/sim} zu finden.
+\includepicture{../img/scatter_plot0.png}{0.65}{plot0}{Konstellationsdiagramme der Golden-Model- und Hardware-Simulationen}
+
+\section{Komponenten}
+
+\subsection{Interpolation}
+
+\subsection{Coarse Alignment}
+
+\subsection{Cyclic Prefix Removal}
+
+\subsection{FFT Wrapper}
+
+\subsection{Fine Alignment}
+
+\subsection{Demodulation}
+
+%\begin{thebibliography}{999}
+
+%\bibitem [1]{gpioHelp1} Raspberry Pi GPIO via the Shell, \url{https://luketopia.net/2013/07/28/raspberry-pi-gpio-via-the-shell/}, 21. Dezember 2017 - 19:18 Uhr
+
+
+%\end{thebibliography}
+
+\end{document}

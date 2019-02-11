@@ -1,0 +1,113 @@
+\documentclass[12pt,a4paper]{scrartcl}
+
+\usepackage[a4paper, left=2cm, right=2cm, bottom=1cm, top=1cm, includeheadfoot]{geometry}
+\usepackage[ngerman]{babel}
+%\usepackage[utf8]{inputenc} % comment this if you uncomment utf8x
+\usepackage[utf8x]{inputenc} % uncomment this if there are problems with 'ä', 'ü', 'ö'
+\usepackage{ucs}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[fleqn]{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+\usepackage{scrpage2}
+\usepackage{graphicx}
+\usepackage{scrpage2} \pagestyle{scrheadings}
+\usepackage[absolute]{textpos}
+\usepackage{pdfpages}
+\usepackage{alltt}
+\usepackage{float}
+\usepackage{array}
+\usepackage{lastpage}
+\usepackage{titling}
+
+% command to format a collum in a table centered
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+\definecolor{mygray}{rgb}{0.95,0.95,0.95}
+\lstset{language=[Visual]Basic, morekeywords={param, local}}
+
+\lstset{
+   literate={ö}{{\"o}}1
+           {ä}{{\"a}}1
+           {ü}{{\"u}}1
+           {ß}{{\ss}}1
+           {é}{{\'e}}1,
+   inputencoding=ansinew,
+   extendedchars=true,
+   basicstyle=\scriptsize\ttfamily,
+   numberstyle=\scriptsize,
+   breaklines=true,
+   tabsize=2,
+   numbersep=5pt
+}
+
+\lstdefinestyle{ccode}{
+   language=C,
+   keywordstyle=\color{blue}\bfseries,
+   stringstyle=\color{BrickRed}\ttfamily,
+   commentstyle=\color{OliveGreen}\ttfamily,
+   showspaces=false,
+   showstringspaces=false,
+   showtabs=false,
+   numbers=left,
+   frame=single
+}
+\lstdefinestyle{cplusplus}{
+   language=C++,
+   keywordstyle=\color{blue}\bfseries,
+   stringstyle=\color{BrickRed}\ttfamily,
+   commentstyle=\color{OliveGreen}\ttfamily,
+   showspaces=false,
+   showstringspaces=false,
+   showtabs=false,
+   numbers=left,
+   frame=single
+}
+\lstdefinestyle{csharp}{
+   language=[sharp]c,
+   keywordstyle=\color{blue}\bfseries,
+   stringstyle=\color{BrickRed}\ttfamily,
+   commentstyle=\color{OliveGreen}\ttfamily,
+   showspaces=false,
+   showstringspaces=false,
+   showtabs=false,
+   numbers=none,
+   frame=single
+}
+\lstdefinestyle{vhdlcode}{
+   language=VHDL,
+   keywordstyle=\color{blue}\bfseries,
+   stringstyle=\color{BrickRed}\ttfamily,
+   commentstyle=\color{OliveGreen}\ttfamily,
+   showspaces=false,
+   showstringspaces=false,
+   showtabs=false,
+   numbers=left,
+   frame=single
+}
+\lstdefinestyle{customoutput}{
+   backgroundcolor=\color{mygray},
+   numbers=none,
+   showspaces=false,
+   showtabs=false
+}
+
+\newcommand{\includeccode}[1]{\lstinputlisting[style=ccode]{#1}}
+\newcommand{\includecpluspluscode}[1]{\lstinputlisting[style=cplusplus]{#1}}
+\newcommand{\includecsharpcode}[1]{\lstinputlisting[style=csharp]{#1}}
+\newcommand{\includevhdlcode}[1]{\lstinputlisting[style=vhdlcode]{#1}}
+\newcommand{\includetextfile}[1]{\lstinputlisting[style=customoutput]{#1}}
+
+%pictures
+\newcommand{\includepicture}[4]{
+\begin{figure}[H]
+\centering
+\includegraphics[scale=#2]{#1}
+\caption{\textit{#4}}
+\label{fig:#3}
+\end{figure}
+}
