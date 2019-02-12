@@ -66,7 +66,7 @@ begin
 			rx_data_osr_valid_i => rxDataInValid,
 			offset_inc_i => offsetInc,
 			offset_dec_i => offsetDec,
-			min_level_i => x"11E0", --x"A700",
+			min_level_i => x"0454", --x"A700",
 			rx_data_i_coarse_o => rxDataIOut,
 			rx_data_q_coarse_o => rxDataQOut,
 			rx_data_coarse_valid_o => rxDataOutValid,
@@ -136,23 +136,20 @@ begin
         gen_pulse(reset_n, '0', 4 * cSysClkPeriod, BLOCKING, "Generate reset pulse");
 		
 		log(ID_LOG_HDR, "Check reset condition");
-		--check_value(interpMode, '0', MATCH_EXACT, ERROR, "Interpolation mode");
-		--check_value(delay, "0000", MATCH_EXACT, ERROR, "Delay output");
-		--check_value(offset, "0000", MATCH_EXACT, ERROR, "Offset output");
 		check_value(rxDataOutValid, '0', MATCH_EXACT, ERROR, "Ouput valid signal");
 		check_value(rxDataSymbStart, '0', MATCH_EXACT, ERROR, "Symbol start signal");
 		check_value(rxDataIOut, "000000000000", ERROR, "I component of output data");
 		check_value(rxDataQOut, "000000000000", ERROR, "Q component of output data");
-	
+	    
 		log(ID_LOG_HDR, "Find correlation peak");
 		log(ID_SEQUENCER, "Start OFDM signal transmission");
 		enableOfdmSignalGeneration <= true;
-		await_value(rxDataSymbStart, '1', 0 ns, 1.5 * vDetectionTime, ERROR, "Interpolation mode '1' when peak is detected after max. 3 ofdm symbols ");		
+		await_value(rxDataSymbStart, '1', 0 ns, 1.5 * vDetectionTime, ERROR, "Start of Symbol '1' when peak is detected after max. 3 ofdm symbols ");		
 		
 		log(ID_LOG_HDR, "Start of symbol and valid generation");
 		await_value(rxDataSymbStart, '1', 0 ns, cDataClkPeriod, ERROR, "Start of symbol active");
 		await_value(rxDataSymbStart, '0', 0.99*cSysClkPeriod, 1.01*cSysClkPeriod, ERROR, "Start of symbol inactive");
-		await_value(rxDataOutValid, '1', 0 ns, cDataClkPeriod, ERROR, "Data valid active");
+		await_value(rxDataOutValid, '1', 0 ns, 1.1*cDataClkPeriod, ERROR, "Data valid active");
 		await_value(rxDataOutValid, '0', 0.99*cSysClkPeriod, 1.01*cSysClkPeriod, ERROR, "Data valid inactive");		
 		await_value(rxDataSymbStart, '1', 0 ns, cSamplesPerSymbol * cDataClkPeriod, ERROR, "Next Start of symbol active");
 		
@@ -193,7 +190,7 @@ begin
 			wait until falling_edge(rxDataSymbStart);
 			log(ID_SEQUENCER, "");
 		end loop;
-
+        
 		offsetInc <= '0';
 		offsetDec <= '0';
 		
@@ -206,7 +203,7 @@ begin
 		check_value(rxDataSymbStart, '0', MATCH_EXACT, ERROR, "Symbol start signal");
 		check_value(rxDataIOut, "000000000000", ERROR, "I component of output data");
 		check_value(rxDataQOut, "000000000000", ERROR, "Q component of output data");
-	
+	    
 		log(ID_LOG_HDR, "Stop simulation");
 		enableSysClk <= false;
 		enableOfdmSignalGeneration <= false;

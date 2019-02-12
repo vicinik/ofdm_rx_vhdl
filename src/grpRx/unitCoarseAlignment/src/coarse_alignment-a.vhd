@@ -85,13 +85,13 @@ architecture Rtl of CoarseAlignment is
 begin
 	
 		-- hardware implementation of schmidl cox algorithmn
-	SchmidlCox: process (sys_clk_i, sys_rstn_i, sys_init_i) is	
+	SchmidlCox: process (sys_clk_i, sys_rstn_i) is	
 		variable vRdm : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- current I,Q value at input
 		variable vRdmL : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- delayed I,Q value		
 		variable vPInterim : aPInterimValue := (I => (others => '0'), Q => (others => '0')); -- I,Q part of correlation interim result
 		variable vPInterimL : aPInterimValue := (I => (others => '0'), Q => (others => '0')); -- I,Q part of correlation interim result
 	begin	
-		if (sys_rstn_i = '0') or (sys_init_i = '1') then
+		if (sys_rstn_i = '0') then
 			regPInterim <= cInitPInterim;
 			regValid <= '0';
 			regPValue <= cInitPValue;			
@@ -258,12 +258,9 @@ begin
 	rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g) <= std_ulogic_vector(rx_data_i_osr_i);
 	rdm(sample_bit_width_g - 1 downto 0) <= std_ulogic_vector(rx_data_q_osr_i);	
 	
-	SampleMemory: process (sys_clk_i, sys_init_i) is
+	SampleMemory: process (sys_clk_i) is
 	begin
-		if (sys_init_i = '1') then
-			sampleBuffer <= (others => (others => '0'));
-			rdmL <= (others => '0');
-		elsif (rising_edge(sys_clk_i)) then
+		if (rising_edge(sys_clk_i)) then
 			if (rx_data_osr_valid_i = '1') then
 				sampleBuffer(to_integer(regWriteIdxSamples)) <= rdm;
 			end if;		
@@ -274,12 +271,9 @@ begin
 	pInterim((4*sample_bit_width_g - 1) downto (2*sample_bit_width_g)) <= std_ulogic_vector(regPInterim.I);
 	pInterim((2*sample_bit_width_g - 1) downto 0) <= std_ulogic_vector(regPInterim.Q);
 	
-	CorrelationMemory: process (sys_clk_i, sys_init_i) is
+	CorrelationMemory: process (sys_clk_i) is
 	begin
-		if (sys_init_i = '1') then
-			correlationBuffer <= (others => (others => '0'));
-			pInterimL <= (others => '0');
-		elsif (rising_edge(sys_clk_i)) then
+		if (rising_edge(sys_clk_i)) then
 			if (regValid = '1') then
 				correlationBuffer(to_integer(regWriteIdxCorrelation)) <= pInterim;
 			end if;

@@ -5,9 +5,9 @@ global k;
 %% settings
 storeToFile = true;
 upsampling = true;
-NumberIterations = 13;
-TrainingsSymbolPosition = [2 7 10];
-TrainingsSequence = []
+NumberIterations = 100;
+TrainingsSymbolPosition = [3];
+TrainingsSequence = [];
 
 NumberOfSubcarrier = 128;
 NumberOfGuardChips = 32;
