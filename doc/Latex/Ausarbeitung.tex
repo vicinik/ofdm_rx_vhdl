@@ -45,7 +45,7 @@ In diesem Projekt sollte eine OFDM-RX-Architektur in VHDL implementiert werden. 
 \includepicture{../img/big_picture.png}{0.45}{big_picture}{Blockschaltbild der gesamten RX-Kette.}
 
 \subsection{Implementierung}
-Die Implementierung wurde weitgehend nach dem Vorbild des spezifizierten Blockschaltbildes vollzogen. Allerdings wird der Offset und das Delay in der Entity \emph{Coarse Alignment} gehandhabt, weshalb die beiden Leitungen \texttt{rx\_data\_delay} und \texttt{rx\_data\_offset} zwischen \emph{Interpolation} und \emph{Coarse Alignment} eliminiert wurden.
+Die Implementierung wurde weitgehend nach dem Vorbild des spezifizierten Blockschaltbildes vollzogen. Allerdings wird der Offset und das Delay in der Entity \emph{Coarse Alignment} gehandhabt, weshalb die Leitungen \texttt{rx\_data\_delay}, \texttt{rx\_data\_offset} und \texttt{interp\_mode} zwischen \emph{Interpolation} und \emph{Coarse Alignment} eliminiert wurden.
 
 \subsection{Toplevel-Simulation}
 Zur Verifikation der gesamten RX-Kette wurde eine Toplevel-Simulation erstellt. Für den Vergleich der Ergebnisse der Hardware-Kette wurde ein Golden Model in Python implementiert. Diese Implementierung berechnet die Input-Signale für die Hardware-Simulation (\texttt{rx\_data\_i}), speichert diese in CSV-Dateien ab und simuliert die gesamte RX-Kette in einer Hardware-ähnlichen Implementierung. Die Ergebnisse des Golden Models werden ebenfalls abgespeichert und am Ende der Hardware-Simulation mit eben jenen Ergebnissen verglichen. Außerdem werden \emph{BER} und \emph{EVM} berechnet sowie Konstellationdiagramme jeweils für beide Simulationen erstellt.
@@ -84,6 +84,49 @@ Abbildung \ref{fig:plot0} zeigt die Konstellationsdiagramme einer Symbol-Sequenz
 \subsection{Interpolation}
 
 \subsection{Coarse Alignment}
+Die Aufgabe des \texttt{Coarse Alignment} ist das Finden des Beginns einer OFDM-Übertragung. Für das Finden der Beginns wird die Methode nach Schmidl und Cox verwendet. Dazu wird in Hardware die Korrelation über zwei identische Halbsymbole (= Trainingssymbol) gerechnet und das Maximum detektiert. Danach werden fortlaufend die Steuersignale \texttt{start\_of\_symbol} und \texttt{data\_valid} des Datenstromes gesetzt und nach den Vorgaben des \texttt{Fine Alignment} korrigiert.
+
+\subsubsection{Architektur}
+
+\begin{center}
+\includepicture{../img/arch_coarse_alignment.png}{0.70}{arch_coarse}{Architektur des \texttt{Coarse Alignment}-Blocks. Links oben sind die Eingangsdaten als I und Q Anteil zu sehen. Darauf folgt die Korrelationsberechnung, gefolgt von der FSM zum Erkennen des Maximums. Unten im Bild ist die Logik zur Steuersignalgenerierung zu sehen.}
+\end{center}
+
+\subsubsection{Simulation}
+Für die Simulation wurde sowohl Matlab als auch Modelsim verwendet. Mit Hilfe von Matlab wurde ein Empfangssignal mit der Länge von 100 Symbolen generiert. In diesem Empfangssignal ist das Trainingssymbol an der zweiten Stelle. Der Beginn der Korrelation des generierten Empfangssignals ist in Abbildung \ref{fig:signal_coarse} zu sehen. Der grün umrandete Signalteil stellt das Trainingssymbol dar. Das obere Diagramm zeigt das Ergebnis der iterativen Implementierung. Das untere Diagramm zeigt das Ergebnis der formalen Implementierung. Es ist zu erkennen, dass beide Diagramme bis auf eine Verschiebung das gleiche Ergebnis darstellen.
+
+\begin{center}
+\includepicture{../img/p_signal.png}{0.33}{signal_coarse}{Beginn des Empfangssignals. Oben ist die iterative und unten die formale Implementierung dargestellt. Der grün umrandete Signalteil stellt das Trainingssymbol dar.}
+\end{center}
+
+Für die Simulation wurde der Simulator Modelsim verwendet. Als Testframework wurde UVVM verwendet. Dadurch war es möglich ein besser strukturierte VHDL-Testbench zu entwerfen. In der Simulation wird das mit Matlab generierte Empfangssignal an den \texttt{Coarse Alignment}-Block angelegt und auf die Detektion des Trainingssymbols gewartet. Nach der Detektion wird das Timing der Steuersignale überprüft. Darauf wird überprüft, ob die Daten korrekt vom Block weiter gegeben werden. Am Ende wird das Verhalten im Zusammenhang mit den Steuerleitungen vom \texttt{Fine Alignment} und dem \texttt{init}-Signal überprüft. In Abbildung \ref{fig:sim_coarse} ist ein Teil der Waveform der Simulation zu sehen. Die berechnete Korrelation in der Simulation stimmt mit der Berechnung in Matlab überein.
+
+\begin{center}
+\includepicture{../img/sim_coarse.png}{0.30}{sim_coarse}{Waveform der Simulation des \texttt{Coarse Alignment}. Im unteren Teil der Bildes ist die Korrelation des Empfangssignales zu erkennen.}
+\end{center}
+
+Um die Simulation starten zu können, müssen die Skripen \texttt{compile\_uvvm.do}, \texttt{compile.do} und \texttt{run\_simulation.do} in dieser Reihenfolge ausgeführt werden.
+
+\subsubsection{Synthese}
+Für den implementierten \texttt{Coarse Alignment}-Block wurde eine Synthese mit Quartus durchgeführt. Als Zielplattform wurde FPGA 5CSXFC6D6F31C6 der DE-10 Standard-Boards verwendet. Folgende Ressourcen werden für den \texttt{Coarse Alignment}-Block benötigt.
+Diese sind in der nachstehenden Tabelle \ref{tab:resources_coarse} zu sehen.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Ressource} & \textbf{Menge} \\ \hline
+Register & 180 \\ \hline
+ALMs & 168 \\ \hline
+Memory Bits & 15360 \\ \hline
+DSP-Blöcke & 2 \\ \hline
+Pin (theoretisch) & 72 \\ \hline
+\end{tabular}
+\caption{Tabelle mit benötigten Ressourcen.}
+\label{tab:resources_coarse}
+\end{table}
+
+Die Timing-Analyse hat ergeben, dass der \texttt{Coarse Alignment}-Block im 1100mV-85C-Model mit einer maximalen Taktfrequenz von 111,68 MHz betrieben werden kann. Als Systemtakt sind 100 MHz vorgesehen.
 
 \subsection{Cyclic Prefix Removal}
 

@@ -23,4 +23,5 @@ set_false_path -from [get_ports {rx_data_i_osr_i[*] rx_data_q_osr_i[*] min_level
 				 sys_init_i\
 				 rx_data_osr_valid_i\
 				 offset_inc_i\
+				 sys_rstn_i\
 				 offset_dec_i}]
