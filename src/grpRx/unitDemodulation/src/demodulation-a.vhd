@@ -16,7 +16,7 @@ architecture Rtl of Demodulation is
 
 begin
 	
-	process(counter, rx_symbols_i, rx_symbols_q, rx_symbols_valid, rx_symbols_start)
+	process(counter, rx_symbols_i, rx_symbols_q, rx_symbols_valid, rx_symbols_start, data)
 		variable tmp_symbol_i	: std_ulogic_vector((sample_bit_width_g - 1) downto 0);
 		variable tmp_symbol_q	: std_ulogic_vector((sample_bit_width_g - 1) downto 0);
 		variable tmp_i			: std_ulogic;
