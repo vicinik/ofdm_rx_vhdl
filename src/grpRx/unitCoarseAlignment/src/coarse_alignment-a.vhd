@@ -64,9 +64,28 @@ architecture Rtl of CoarseAlignment is
 		ReadIdx => (others => '0')
 	);
 	
+	-- mem init function
+	function initialize_sampleBuffer return aSampleMemory is
+		variable result : aSampleMemory;
+	begin
+		for i in 0 to cBufferLength - 1 loop
+			result(i) := (others => '0');
+		end loop;
+		return result;
+	end initialize_sampleBuffer;
+	
+	function initialize_correlationBuffer return aCorrelationMemory is
+		variable result : aCorrelationMemory;
+	begin
+		for i in 0 to cBufferLength - 1 loop
+			result(i) := (others => '0');
+		end loop;
+		return result;
+	end initialize_correlationBuffer;
+	
 	-- signals
-	signal sampleBuffer : aSampleMemory := (others => (others => '0')); -- memory for sample circular buffer
-	signal correlationBuffer : aCorrelationMemory := (others => (others => '0')); -- memory for correlation circular buffer
+	signal sampleBuffer : aSampleMemory := initialize_sampleBuffer; -- memory for sample circular buffer
+	signal correlationBuffer : aCorrelationMemory := initialize_correlationBuffer; -- memory for correlation circular buffer
 	signal regPValue : aPValue := cInitPValue; -- register for correlation result
 	signal regCoarse, nextRegCoarse	: aCoarseAlignmentReg := cInitCoarseReg; -- register for states of coarse alignment
 	
@@ -82,9 +101,32 @@ architecture Rtl of CoarseAlignment is
 	signal regReadIdxSamples : unsigned(LogDualis(cBufferLength) - 1 downto 0) := (others => '0');  -- read idx for circular buffer of sampels
 	signal regWriteIdxCorrelation : unsigned(LogDualis(cBufferLength) - 1 downto 0) := cInitWriteIdx;  -- write idx for circular buffer of correlation results
 	signal regReadIdxCorrelation : unsigned(LogDualis(cBufferLength) - 1 downto 0) := (others => '0'); -- read idx for circular buffer of correlation results
-begin
 	
-		-- hardware implementation of schmidl cox algorithmn
+	signal reg_rx_data_i_osr_i : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
+	signal reg_rx_data_q_osr_i : signed((sample_bit_width_g - 1) downto 0) := (others => '0');
+	signal reg_rx_data_osr_valid_i : std_ulogic := '0';
+	signal reg_offset_inc_i : std_ulogic := '0';
+	signal reg_offset_dec_i : std_ulogic := '0';
+begin
+	-- input register
+	InputRegister: process (sys_clk_i, sys_rstn_i) is
+	begin
+		if (sys_rstn_i = '0') then
+			reg_rx_data_i_osr_i <= (others => '0');
+			reg_rx_data_q_osr_i <= (others => '0');
+			reg_rx_data_osr_valid_i <= '0';
+			reg_offset_inc_i <= '0';
+			reg_offset_dec_i <= '0';
+		elsif (rising_edge(sys_clk_i)) then	
+			reg_rx_data_i_osr_i <= rx_data_i_osr_i;
+			reg_rx_data_q_osr_i <= rx_data_q_osr_i;
+			reg_rx_data_osr_valid_i <= rx_data_osr_valid_i;
+			reg_offset_inc_i <= offset_inc_i;
+			reg_offset_dec_i <= offset_dec_i;
+		end if;
+	end process;
+	
+	-- hardware implementation of schmidl cox algorithmn
 	SchmidlCox: process (sys_clk_i, sys_rstn_i) is	
 		variable vRdm : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- current I,Q value at input
 		variable vRdmL : aComplexSample := (I => (others => '0'), Q => (others => '0')); -- delayed I,Q value		
@@ -103,10 +145,10 @@ begin
 			vRdm := (I => signed(rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdm(sample_bit_width_g - 1 downto 0))); -- current I,Q samples			
 			vRdmL := (I => signed(rdmL((2*sample_bit_width_g - 1) downto sample_bit_width_g)), Q => signed(rdmL(sample_bit_width_g - 1 downto 0))); -- delayed I,Q samples			
 			vPInterimL := (I => signed(pInterimL(4*sample_bit_width_g - 1 downto 2*sample_bit_width_g)), Q => signed(pInterimL(2*sample_bit_width_g - 1 downto 0))); -- delayed correlation results		
-			regValid <= rx_data_osr_valid_i; -- store valid signal for next stage
+			regValid <= reg_rx_data_osr_valid_i; -- store valid signal for next stage
 		
 			-- complex multipilcation
-			if (rx_data_osr_valid_i = '1') then
+			if (reg_rx_data_osr_valid_i = '1') then
 				regPInterim.I <= (vRdm.I * vRdmL.I) - (-vRdm.Q * vRdmL.Q);
 				regPInterim.Q <= (vRdm.Q * vRdmL.I) - (vRdm.I * vRdmL.Q);			
 			
@@ -161,7 +203,7 @@ begin
 	end process;
 	
 	-- State machine for coarse alignment
-	StateMachine: process (regCoarse, regPValue, min_level_i, rx_data_osr_valid_i, rx_data_i_osr_i, rx_data_q_osr_i, offset_inc_i, offset_dec_i) is
+	StateMachine: process (regCoarse, regPValue, min_level_i, reg_rx_data_osr_valid_i, reg_rx_data_i_osr_i, reg_rx_data_q_osr_i, reg_offset_inc_i, reg_offset_dec_i) is
 		variable vMaxCounterValue : natural := 0;
 	begin
 		nextRegCoarse <= regCoarse;
@@ -170,7 +212,7 @@ begin
 		rx_data_i_coarse_o <= (others => '0');
 		rx_data_q_coarse_o <= (others => '0');
 		
-		if (rx_data_osr_valid_i = '1') and (regCoarse.State /= CoarseAlignmentDone) then
+		if (reg_rx_data_osr_valid_i = '1') and (regCoarse.State /= CoarseAlignmentDone) then
 			nextRegCoarse.WriteIdx <= regCoarse.WriteIdx + 1;
 			nextRegCoarse.ReadIdx <= regCoarse.ReadIdx + 1;
 			
@@ -201,23 +243,18 @@ begin
 					nextRegCoarse.State <= CoarseAlignmentDone;
 					rx_data_coarse_start_o <= '1';
 					rx_data_coarse_valid_o <= '1';
-					rx_data_i_coarse_o <= rx_data_i_osr_i;
-					rx_data_q_coarse_o <= rx_data_q_osr_i;
-				end if;
-			-- wait if the current symbol at the high rate is done
-			when WaitOnSymbolFinished =>
-				if (rx_data_osr_valid_i = '0') then
-					nextRegCoarse.State <= CoarseAlignmentDone;
+					rx_data_i_coarse_o <= reg_rx_data_i_osr_i;
+					rx_data_q_coarse_o <= reg_rx_data_q_osr_i;
 				end if;
 			-- Coarse alignment is done. The measured delay is ajusted according to the fine alignment and passed to the interpolator. The input samples are passed to the output
 			-- and the start of symbol signal is generated. The interpolation mode is set to '1'.
 			when CoarseAlignmentDone =>		
-				if (rx_data_osr_valid_i = '1') then				
+				if (reg_rx_data_osr_valid_i = '1') then				
 					nextRegCoarse.OffsetCounter <= regCoarse.OffsetCounter + 1;
 						
-					if ((regCoarse.SampleCounter = (symbol_length_g - 1)) and (offset_inc_i = '1') and (offset_dec_i = '0')) then
+					if ((regCoarse.SampleCounter = (symbol_length_g - 1)) and (reg_offset_inc_i = '1') and (reg_offset_dec_i = '0')) then
 						vMaxCounterValue := cMaxOffsetCounter + 1;
-					elsif ((regCoarse.SampleCounter = (symbol_length_g - 1)) and (offset_inc_i = '0') and (offset_dec_i = '1')) then
+					elsif ((regCoarse.SampleCounter = (symbol_length_g - 1)) and (reg_offset_inc_i = '0') and (reg_offset_dec_i = '1')) then
 						vMaxCounterValue := cMaxOffsetCounter - 1;
 					else
 						vMaxCounterValue := cMaxOffsetCounter;
@@ -240,8 +277,8 @@ begin
 				
 				if ((regCoarse.OffsetCounter = x"00") and (regCoarse.OutputActive = '1')) then
 					rx_data_coarse_valid_o <= '1';
-					rx_data_i_coarse_o <= rx_data_i_osr_i;
-					rx_data_q_coarse_o <= rx_data_q_osr_i;
+					rx_data_i_coarse_o <= reg_rx_data_i_osr_i;
+					rx_data_q_coarse_o <= reg_rx_data_q_osr_i;
 					nextRegCoarse.OutputActive <= '0';
 					
 					if (regCoarse.SampleCounter = x"00") then
@@ -255,13 +292,13 @@ begin
 	end process;
 		
 	-- memories for circular buffers
-	rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g) <= std_ulogic_vector(rx_data_i_osr_i);
-	rdm(sample_bit_width_g - 1 downto 0) <= std_ulogic_vector(rx_data_q_osr_i);	
+	rdm((2*sample_bit_width_g - 1) downto sample_bit_width_g) <= std_ulogic_vector(reg_rx_data_i_osr_i);
+	rdm(sample_bit_width_g - 1 downto 0) <= std_ulogic_vector(reg_rx_data_q_osr_i);	
 	
 	SampleMemory: process (sys_clk_i) is
 	begin
 		if (rising_edge(sys_clk_i)) then
-			if (rx_data_osr_valid_i = '1') then
+			if (reg_rx_data_osr_valid_i = '1') then
 				sampleBuffer(to_integer(regWriteIdxSamples)) <= rdm;
 			end if;		
 			rdmL <= sampleBuffer(to_integer(regReadIdxSamples));

@@ -1,0 +1,18 @@
+\BOOKMARK [1][-]{section.1}{\334bersicht}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Spezifikation}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Implementierung}{section.1}% 3
+\BOOKMARK [2][-]{subsection.1.3}{Toplevel-Simulation}{section.1}% 4
+\BOOKMARK [3][-]{subsubsection.1.3.1}{Anleitung zur Toplevel-Simulation}{subsection.1.3}% 5
+\BOOKMARK [3][-]{subsubsection.1.3.2}{Simulations-Output}{subsection.1.3}% 6
+\BOOKMARK [3][-]{subsubsection.1.3.3}{Konstellationsdiagramm}{subsection.1.3}% 7
+\BOOKMARK [3][-]{subsubsection.1.3.4}{Synthese}{subsection.1.3}% 8
+\BOOKMARK [1][-]{section.2}{Komponenten}{}% 9
+\BOOKMARK [2][-]{subsection.2.1}{Interpolation}{section.2}% 10
+\BOOKMARK [2][-]{subsection.2.2}{Coarse Alignment}{section.2}% 11
+\BOOKMARK [3][-]{subsubsection.2.2.1}{Architektur}{subsection.2.2}% 12
+\BOOKMARK [3][-]{subsubsection.2.2.2}{Simulation}{subsection.2.2}% 13
+\BOOKMARK [3][-]{subsubsection.2.2.3}{Synthese}{subsection.2.2}% 14
+\BOOKMARK [2][-]{subsection.2.3}{Cyclic Prefix Removal}{section.2}% 15
+\BOOKMARK [2][-]{subsection.2.4}{FFT Wrapper}{section.2}% 16
+\BOOKMARK [2][-]{subsection.2.5}{Fine Alignment}{section.2}% 17
+\BOOKMARK [2][-]{subsection.2.6}{Demodulation}{section.2}% 18
