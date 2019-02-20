@@ -7,7 +7,8 @@ entity TbdOfdmRx is
         sample_bit_width_g  : natural := 12;
         symbol_length_g     : natural := 160;
         raw_symbol_length_g : natural := 128;
-        osr_g               : natural := 10
+        osr_g               : natural := 10;
+        fft_exp_g           : natural := 9
     );
     port(
         -- clock, reset and init ports

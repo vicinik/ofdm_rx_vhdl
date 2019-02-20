@@ -6,7 +6,7 @@ entity CoarseAlignment is
     generic (
         symbol_length_g   	: natural := 320;		
         sample_bit_width_g 	: natural := 12;
-		osr_g				: natural := 4
+			osr_g				: natural := 4
     );
     port (
         -- clock, async reset and init signal

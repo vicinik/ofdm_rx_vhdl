@@ -15,7 +15,15 @@ if {[file exists work] == 0} {
 	vmap work work
 }
 
+# Integrate the FFT IP core
+if {[file exists libraries/fft_ii_0] == 0} {
+	echo "No library 'fft_ii_0' found. Compiling..."
+	source ${Root}/unitTopLevel/sim/msim_setup.tcl
+	com_fft
+}
+
 # Compile all units
+vcom -work work ${Root}/unitInterpolation/src/Upsampling-p.vhd
 vcom -work work ${Root}/unitInterpolation/src/interpolation-e.vhd
 vcom -work work ${Root}/unitInterpolation/src/interpolation-a.vhd
 vcom -work work ${Root}/unitCoarseAlignment/src/log_dualis-p.vhd

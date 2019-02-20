@@ -93,7 +93,8 @@ begin
     fft_wrapper_inst : entity work.FftWrapper
         generic map(
             raw_symbol_length_g  => raw_symbol_length_g,
-            sample_bit_width_g   => sample_bit_width_g
+            sample_bit_width_g   => sample_bit_width_g,
+            fft_exp_g            => fft_exp_g
         )
         port map(
             sys_clk_i              => sys_clk_i,
@@ -112,7 +113,7 @@ begin
     -- fine alignment instantiation
     fine_alignment_inst : entity work.FineAlignment
         generic map(
-            raw_symbol_length_g  => raw_symbol_length_g,
+            raw_symbol_length_g  => raw_symbol_length_g/2,
             sample_bit_width_g   => sample_bit_width_g
         )
         port map(

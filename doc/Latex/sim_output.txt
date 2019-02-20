@@ -1,0 +1,102 @@
+# ==========================================
+# Test the OFDM RX path
+# ==========================================
+# [      0.00 us] INFO    : Working in folder src/grpRx/unitTopLevel/sim
+# 
+# Testing RX chain with symbol sequence #0
+# ------------------------------------------
+# [      0.12 us] INFO    : Generating input data and expected bitstream by calling ../src/golden_model.py
+# [      0.12 us] INFO    : Loading input data and expected bitstream from files rx_in_signal0.csv and result_bits0.csv
+# [      0.12 us] INFO    : Feeding system with RX symbols, this might take a while
+# [    243.38 us] INFO    : Received  256 of 5120 output bits ( 1 of 20 chips)
+# [    323.37 us] INFO    : Received  512 of 5120 output bits ( 2 of 20 chips)
+# [    403.26 us] INFO    : Received  768 of 5120 output bits ( 3 of 20 chips)
+# [    483.26 us] INFO    : Received 1024 of 5120 output bits ( 4 of 20 chips)
+# [    563.26 us] INFO    : Received 1280 of 5120 output bits ( 5 of 20 chips)
+# [    643.37 us] INFO    : Received 1536 of 5120 output bits ( 6 of 20 chips)
+# [    723.38 us] INFO    : Received 1792 of 5120 output bits ( 7 of 20 chips)
+# [    803.37 us] INFO    : Received 2048 of 5120 output bits ( 8 of 20 chips)
+# [    883.26 us] INFO    : Received 2304 of 5120 output bits ( 9 of 20 chips)
+# [    963.26 us] INFO    : Received 2560 of 5120 output bits (10 of 20 chips)
+# [   1043.27 us] INFO    : Received 2816 of 5120 output bits (11 of 20 chips)
+# [   1123.37 us] INFO    : Received 3072 of 5120 output bits (12 of 20 chips)
+# [   1203.38 us] INFO    : Received 3328 of 5120 output bits (13 of 20 chips)
+# [   1283.37 us] INFO    : Received 3584 of 5120 output bits (14 of 20 chips)
+# [   1363.27 us] INFO    : Received 3840 of 5120 output bits (15 of 20 chips)
+# [   1443.26 us] INFO    : Received 4096 of 5120 output bits (16 of 20 chips)
+# [   1523.27 us] INFO    : Received 4352 of 5120 output bits (17 of 20 chips)
+# [   1603.37 us] INFO    : Received 4608 of 5120 output bits (18 of 20 chips)
+# [   1680.11 us] INFO    : Received enough output bits
+# [   1680.11 us] INFO    : Verifying RX chain output
+# [   1680.11 us] SUCCESS : Validation successful: BER=0.000, EVM=20.895db
+# 
+# [   1680.11 us] INFO    : Scatter plot file written: scatter_plot0.png
+# 
+# Testing RX chain with symbol sequence #1
+# ------------------------------------------
+# [   1680.13 us] INFO    : Generating input data and expected bitstream by calling ../src/golden_model.py
+# [   1680.13 us] INFO    : Loading input data and expected bitstream from files rx_in_signal1.csv and result_bits1.csv
+# [   1680.13 us] INFO    : Feeding system with RX symbols, this might take a while
+# [   1923.38 us] INFO    : Received  256 of 5120 output bits ( 1 of 20 chips)
+# [   2003.37 us] INFO    : Received  512 of 5120 output bits ( 2 of 20 chips)
+# [   2083.26 us] INFO    : Received  768 of 5120 output bits ( 3 of 20 chips)
+# [   2163.26 us] INFO    : Received 1024 of 5120 output bits ( 4 of 20 chips)
+# [   2243.26 us] INFO    : Received 1280 of 5120 output bits ( 5 of 20 chips)
+# [   2323.36 us] INFO    : Received 1536 of 5120 output bits ( 6 of 20 chips)
+# [   2403.38 us] INFO    : Received 1792 of 5120 output bits ( 7 of 20 chips)
+# [   2483.36 us] INFO    : Received 2048 of 5120 output bits ( 8 of 20 chips)
+# [   2563.26 us] INFO    : Received 2304 of 5120 output bits ( 9 of 20 chips)
+# [   2643.26 us] INFO    : Received 2560 of 5120 output bits (10 of 20 chips)
+# [   2723.26 us] INFO    : Received 2816 of 5120 output bits (11 of 20 chips)
+# [   2803.36 us] INFO    : Received 3072 of 5120 output bits (12 of 20 chips)
+# [   2883.38 us] INFO    : Received 3328 of 5120 output bits (13 of 20 chips)
+# [   2963.36 us] INFO    : Received 3584 of 5120 output bits (14 of 20 chips)
+# [   3043.26 us] INFO    : Received 3840 of 5120 output bits (15 of 20 chips)
+# [   3123.26 us] INFO    : Received 4096 of 5120 output bits (16 of 20 chips)
+# [   3203.26 us] INFO    : Received 4352 of 5120 output bits (17 of 20 chips)
+# [   3283.36 us] INFO    : Received 4608 of 5120 output bits (18 of 20 chips)
+# [   3360.11 us] INFO    : Received enough output bits
+# [   3360.11 us] INFO    : Verifying RX chain output
+# [   3360.11 us] SUCCESS : Validation successful: BER=0.000, EVM=21.016db
+# 
+# [   3360.11 us] INFO    : Scatter plot file written: scatter_plot1.png
+# 
+# Testing RX chain with symbol sequence #2
+# ------------------------------------------
+# [   3360.13 us] INFO    : Generating input data and expected bitstream by calling ../src/golden_model.py
+# [   3360.13 us] INFO    : Loading input data and expected bitstream from files rx_in_signal2.csv and result_bits2.csv
+# [   3360.13 us] INFO    : Feeding system with RX symbols, this might take a while
+# [   3603.24 us] INFO    : Received  256 of 5120 output bits ( 1 of 20 chips)
+# [   3683.24 us] INFO    : Received  512 of 5120 output bits ( 2 of 20 chips)
+# [   3763.26 us] INFO    : Received  768 of 5120 output bits ( 3 of 20 chips)
+# [   3843.26 us] INFO    : Received 1024 of 5120 output bits ( 4 of 20 chips)
+# [   3923.36 us] INFO    : Received 1280 of 5120 output bits ( 5 of 20 chips)
+# [   4003.38 us] INFO    : Received 1536 of 5120 output bits ( 6 of 20 chips)
+# [   4083.36 us] INFO    : Received 1792 of 5120 output bits ( 7 of 20 chips)
+# [   4163.27 us] INFO    : Received 2048 of 5120 output bits ( 8 of 20 chips)
+# [   4243.26 us] INFO    : Received 2304 of 5120 output bits ( 9 of 20 chips)
+# [   4323.27 us] INFO    : Received 2560 of 5120 output bits (10 of 20 chips)
+# [   4403.36 us] INFO    : Received 2816 of 5120 output bits (11 of 20 chips)
+# [   4483.38 us] INFO    : Received 3072 of 5120 output bits (12 of 20 chips)
+# [   4563.36 us] INFO    : Received 3328 of 5120 output bits (13 of 20 chips)
+# [   4643.27 us] INFO    : Received 3584 of 5120 output bits (14 of 20 chips)
+# [   4723.26 us] INFO    : Received 3840 of 5120 output bits (15 of 20 chips)
+# [   4803.27 us] INFO    : Received 4096 of 5120 output bits (16 of 20 chips)
+# [   4883.36 us] INFO    : Received 4352 of 5120 output bits (17 of 20 chips)
+# [   4963.38 us] INFO    : Received 4608 of 5120 output bits (18 of 20 chips)
+# [   5040.10 us] INFO    : Received enough output bits
+# [   5040.10 us] INFO    : Verifying RX chain output
+# [   5040.10 us] SUCCESS : Validation successful: BER=0.000, EVM=22.675db
+# 
+# [   5040.10 us] INFO    : Scatter plot file written: scatter_plot2.png
+# 
+# ==========================================
+# Simulation end @5040.10 us
+# ==========================================
+# Number of checks :           3
+# Successful       :           3
+# Warnings         :           0
+# Errors           :           0
+# ==========================================
+# SIMULATION SUCCESS
+# ==========================================
