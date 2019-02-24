@@ -201,6 +201,50 @@ Für den FFT-Block  wurde ein Wrapper für die Altera-FFT implementierung gebaut
 
 \subsection{Fine Alignment}
 
+Das \texttt{Fine Alignment} kümmert sich um die Feinjustierung der Symbole über die Phase. Eine Phasenverschiebung im Frequenzbereich ist gleichbedeutend mit einer zeitlichen Verschiebung im Zeitbereich. Nach der groben Korrektur (Coarse Alignment) besteht immer noch ein Phasenfehler, der über mehrere Symbole hinweg korrigiert werden kann.\\
+\\
+
+
+\subsubsection{Architektur}
+Das Blockdiagramm in \autoref{fig:FineAlignmentBlock} verdeutlicht den Aufbau des Fine Alignment. Zur Berechnung des Phasenfehlers werden, aufgrund der Linearphasigkeit des Filters in diesem Bereich, nur die ersten 32 Symbole verwendet. Die Symbole werden zu Beginn in den 1. Quadranten (First Quadrant) gebracht. Die Inphase- und Quadratur-Komponenten werden separat aufsummiert. Der Phasenfehler ergibt sich durch die Subtraktion der Inphase- von der Quadratur-Komponente (Q-I). Anders ausgedrückt Imaginärteil - Realteil. Dieser Ansatz ist möglich, da wir QPSK verwenden, wo nur ein Symbol pro Quadrant vorhanden ist. Ergibt die Subtraktion 0 so ist kein Phasenfehler gegeben. Andernfalls ist nur das Vorzeichen interessant, welches die Richtung für die Verschiebung im Zeitbereich angibt.\\
+\\
+Hat ein komplettes Symbol das Fine Alignment durchlaufen, erwartet sich das Coarse Alignment eine Entscheidung ob \textit{increment} oder \textit{decrement}. Keines von beiden ist in der Implementierung nicht möglich. Die inc und dec Leitungen sind direkt verknüpft mit dem Vorzeichen des Ergebnisse der Phasenberechnung. Das Ergebnis schwankt somit bei der Berechnung (innerhalb der 32 Symbole) stark und ist danach fix auf einem Wert für den Rest des Symbols (bis zum Start des nächsten). Dadurch schwankt das Fine Alignment immer zwischen dem besten und zweitbesten Wert für Korrektur der Phase. Wichtig für die Implementierung sind die Bitbreiten für die Summen von Imaginär- und Realteil (Reg Imaginär, Reg Real). Diese berechnen sich aus 32 * 12 Bit = 17 Bit.
+
+\begin{figure}[htbp] 
+	\centering
+	\includegraphics[width=0.9\textwidth]{../img/FineAlignmentBlock.png}
+	\caption{Blockdiagramm des Fine Alignment}
+	\label{fig:FineAlignmentBlock}
+\end{figure}
+
+\subsubsection{Simulation}
+Getestet wurde mit UVVM. Die Testbench vom Coarse Alignment wurde wiederverwendet und adaptiert für das Fine Alignment. Geprüft werden Reset-Condition, Ergebnis von inc und dec nach den ersten 32 Werten des Symbols und die Init-Condition nach dem Symbol. Aufgrund der Implementierung ist im Reset und im Init die dec Leitung aktiv und die inc Leitung inaktiv. Die Leitungen werden aber erst beim Übergang von Init auf Phase in diesen Zustand versetzt. Ansonsten würde das eigentliche Ergebnis nach den 32 Symbolen verloren gehen (vgl. \autoref{fig:FineAlignmentSim}).\\
+\\
+Um Werte für die Simulation zu generieren wurde ein Matlab-Modell des Fine Alignment erstellt. In jedem Schritt wo korrigiert wird können die Daten aus dem Skript für die Simulation gespeichert werden. Lediglich die Vergleiche in der Testbench der inc und dec Leitungen müssen entsprechend angepasst werden.
+
+\begin{figure}[htbp] 
+	\centering
+	\includegraphics[width=0.9\textwidth]{../img/FineAlignmentSim.png}
+	\caption{Simualtion mit Init-/Reset-Zustand beim Cursor.}
+	\label{fig:FineAlignmentSim}
+\end{figure}
+
+\subsubsection{Synthese}
+Die Synthese wurde ebenfalls für den Device 5CSXFC6D6F31C6 durchgeführt. Eingestellt bei den generics wurden eine Symbollänge von 128 und eine Bitbreite von 12 Bit. Die Implementierung könnte für die Synthese noch verbessert werden. Die größer/kleiner Vergleiche für die Quadranten können auf ein gleich abgeändert werden, wenn man auf die Vorzeichen prüft. Register können ebenfalls beim \textit{SymbolCounter} gespart werden, wenn man ihn auf die 32 Symbole beschränkt. Diese Optimierungen wurden nicht mehr durchgeführt. \autoref{tab:resources_fine} zeigt den Ressourcenverbrauch. Die fmax beträgt für das Modell 1100mV 85C (Slow) 253,04 MHz. Das ist ausreichend für die geforderten 100 MHz.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Ressource} & \textbf{Menge} \\ \hline
+		Register & 42 \\ \hline
+		ALMs & 118 / 41,910 \\ \hline
+		Pins (theoretisch) & 52 / 499 \\ \hline
+	\end{tabular}
+	\caption{Tabelle mit benötigten Ressourcen.}
+	\label{tab:resources_fine}
+\end{table}
+
 \subsection{Demodulation}
 
 %\begin{thebibliography}{999}
