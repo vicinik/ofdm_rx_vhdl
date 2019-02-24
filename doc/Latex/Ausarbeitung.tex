@@ -137,6 +137,9 @@ Für die korrekte Funktionalität des Interpolationsblockes wurde Matlab und Mod
 
 
 \includepicture{../img/interpolation_test.png}{0.62}{interpolation_test}{Testausgabe von \texttt{Interpolation}}.
+\includepicture{../img/interpolation_wave.png}{0.35}{interpolation_wave}{Waveausgabe von \texttt{Interpolation}}.
+
+\noindent In Abbildung \ref{fig:interpolation_wave} ist die Waveform der Simulation zu sehen. Es ist zu erkennen, dass das Upsampling erst beim Empfangen des dritten Symboles startet und danach jeden Takt ein Upsample-Symbol berechnet.
 
 \subsection{Coarse Alignment}
 Die Aufgabe des \texttt{Coarse Alignment} ist das Finden des Beginns einer OFDM-Übertragung. Für das Finden der Beginns wird die Methode nach Schmidl und Cox verwendet. Dazu wird in Hardware die Korrelation über zwei identische Halbsymbole (= Trainingssymbol) berechnet und das Maximum detektiert. Danach werden fortlaufend die Steuersignale \texttt{start\_of\_symbol} und \texttt{data\_valid} des Datenstromes gesetzt und nach den Vorgaben des \texttt{Fine Alignment} korrigiert.
