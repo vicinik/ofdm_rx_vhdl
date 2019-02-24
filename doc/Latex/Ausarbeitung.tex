@@ -105,6 +105,38 @@ Die Timing-Analyse hat ergeben, dass das Gesamtsystem im 1100mV-85C-Model mit ei
 \section{Komponenten}
 
 \subsection{Interpolation}
+Die Aufgabe des Blockes \texttt{Interpolation} ist das Upsampling der einzelnen Symbole um 2\textsuperscript{n} Symbole. Als Interpolationsalgorithmus wird die Taylor-Reihe verwendet mit
+\\
+\\
+
+$ f(x)=f(x\textsubscript{0}	) +f\textsuperscript{'} (x\textsubscript{0}) (x-x\textsubscript{0})+\frac{f\textsuperscript{''}(x\textsubscript{0})}{2!}(x-x\textsubscript{0})\textsuperscript{2} $,
+\\
+\\
+
+\noindent wobei die erste und zweite Ableitung aus den ursprünglichen Samples berechnet wird
+
+
+
+\subsubsection{Architektur}
+Für die Berechnung der Interpolationssymbole durch die Taylor-Reihe werden jeweils 3 Symbole benötigt. Zu Begin wird deshalb so lange gewartet, bis 3 Symbole gespeichert werden. Danach kann nun die erste und zweite Abbleitung durch
+\\
+\\
+$f\textsuperscript{'}(x\textsubscript{0})=f(x\textsubscript{1})-f(x\textsubscript{0}) $\\
+\noindent $f\textsuperscript{''}(x\textsubscript{0})=f(x\textsubscript{2})-2f(x\textsubscript{1})+f(x\textsubscript{0}) $
+\\
+\\
+\noindent berechnet werden und somit mit jedem Takt ein neues interpoliertes Symbol ausgegeben werden. Wie viele Symbole interpoliert werden sollten, wird als generic Parameter mitgegeben.
+
+\includepicture{../img/arch_interpolation}{0.65}{arch_interpolation}{Architektur von \texttt{Interpolation}}.
+
+
+
+\subsubsection{Simulation}
+
+Für die korrekte Funktionalität des Interpolationsblockes wurde Matlab und Modelsim für die Simulation verwendet. Dazu wurden zufällige Symbole in Matlab generiert. Diese Symbole wurden einmal mit der Matlab Funktion und einmal mit vhdl interpoliert, geplotet und verglichen.
+
+
+\includepicture{../img/interpolation_test.png}{0.62}{interpolation_test}{Testausgabe von \texttt{Interpolation}}.
 
 \subsection{Coarse Alignment}
 Die Aufgabe des \texttt{Coarse Alignment} ist das Finden des Beginns einer OFDM-Übertragung. Für das Finden der Beginns wird die Methode nach Schmidl und Cox verwendet. Dazu wird in Hardware die Korrelation über zwei identische Halbsymbole (= Trainingssymbol) berechnet und das Maximum detektiert. Danach werden fortlaufend die Steuersignale \texttt{start\_of\_symbol} und \texttt{data\_valid} des Datenstromes gesetzt und nach den Vorgaben des \texttt{Fine Alignment} korrigiert.
@@ -162,6 +194,10 @@ Die Timing-Analyse hat ergeben, dass das \texttt{Coarse Alignment} im 1100mV-85C
 \subsection{Cyclic Prefix Removal}
 
 \subsection{FFT Wrapper}
+Für den FFT-Block  wurde ein Wrapper für die Altera-FFT implementierung gebaut. Dazu werden 256 I/Q Symbole in einem Buffer gespeichert. Dieser Buffer wird der Altera FFT implemssentierung übergeben, die Steuersignale Start und Valid gesetzt und die Berechnung der Altera FFT beginnt. Wenn die Altera FFT-Implementierung die Berechnung fertig hat, werden die Steuerung des Ausganges Valid und StartOfPacket gesetzt. Somit kann das FFT-Ergebnis wieder in den internen Buffer gespeichert werden. Die unbenutzen Frequenzen werden herausgefiltert und die Daten an das FineAlignment weitergegeben.
+
+\includepicture{../img/arch_fft.png}{0.65}{arch_fft}{Architektur von \texttt{FFT Wrapper}}.
+
 
 \subsection{Fine Alignment}
 
