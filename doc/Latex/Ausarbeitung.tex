@@ -141,6 +141,12 @@ Für die korrekte Funktionalität des Interpolationsblockes wurde Matlab und Mod
 
 \noindent In Abbildung \ref{fig:interpolation_wave} ist die Waveform der Simulation zu sehen. Es ist zu erkennen, dass das Upsampling erst beim Empfangen des dritten Symboles startet und danach jeden Takt ein Upsample-Symbol berechnet.
 
+\subsubsection{Synthese}
+\includepicture{../img/synthese_interp.png}{1}{Synthese_Interplation}{Syntheseergebnis von \texttt{Interpolation}}.
+
+Abbildung \ref{fig:Synthese_Interplation} zeigt den Ressourcenverbrauch für den Interpolationsblock.
+Die Timing-Analyse hat ergeben, dass die \texttt{Interpolation} im 1100mV-85C-Model mit einer maximalen Taktfrequenz von 107,12 MHz betrieben werden kann. Als Systemtakt sind 100 MHz vorgesehen.
+
 \subsection{Coarse Alignment}
 Die Aufgabe des \texttt{Coarse Alignment} ist das Finden des Beginns einer OFDM-Übertragung. Für das Finden der Beginns wird die Methode nach Schmidl und Cox verwendet. Dazu wird in Hardware die Korrelation über zwei identische Halbsymbole (= Trainingssymbol) berechnet und das Maximum detektiert. Danach werden fortlaufend die Steuersignale \texttt{start\_of\_symbol} und \texttt{data\_valid} des Datenstromes gesetzt und nach den Vorgaben des \texttt{Fine Alignment} korrigiert.
 
@@ -201,6 +207,8 @@ Für den FFT-Block  wurde ein Wrapper für die Altera-FFT implementierung gebaut
 
 \includepicture{../img/arch_fft.png}{0.65}{arch_fft}{Architektur von \texttt{FFT Wrapper}}.
 
+\subsubsection{Simulation}
+Um das Ergebnis zu evaluieren, wurden OFDM Symbole in Matlab mithilfe der Altera-IFFT generiert. Diese Symbole wurden der VHDL Beschreibung übergeben und das Ergebnis mit den ursprünglichen Symbolen verglichen. Würde es bei der FFT zu Problemen kommen, werden Error Signale als Ausgang der FFT-Altera gesetzt, welche bei den Tests überprüft wurden.
 
 \subsection{Fine Alignment}
 

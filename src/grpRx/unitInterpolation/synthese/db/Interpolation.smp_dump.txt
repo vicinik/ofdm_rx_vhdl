@@ -1,0 +1,9 @@
+
+State Machine - |Interpolation|Reg.State
+Name Reg.State.Done Reg.State.UpSampling Reg.State.CalcDerived Reg.State.WaitSample3 Reg.State.WaitSample2 Reg.State.Init 
+Reg.State.Init 0 0 0 0 0 0 
+Reg.State.WaitSample2 0 0 0 0 1 1 
+Reg.State.WaitSample3 0 0 0 1 0 1 
+Reg.State.CalcDerived 0 0 1 0 0 1 
+Reg.State.UpSampling 0 1 0 0 0 1 
+Reg.State.Done 1 0 0 0 0 1 
