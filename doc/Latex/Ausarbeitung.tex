@@ -77,7 +77,7 @@ Nachfolgend ist der Output einer Simulation von 3 unterschiedlichen RX-Sequenzen
 
 \subsubsection{Konstellationsdiagramm}
 Abbildung \ref{fig:plot0} zeigt die Konstellationsdiagramme einer Symbol-Sequenz für die Golden-Model- und die Hardware-Simulation. Die Plots sind nach einer Simulation im Ordner\\ \texttt{src/grpRx/unitTopLevel/sim} zu finden.
-\includepicture{../img/scatter_plot0.png}{0.65}{plot0}{Konstellationsdiagramme der Golden-Model- und Hardware-Simulationen}
+\includepicture{../img/scatter_plot0.png}{0.55}{plot0}{Konstellationsdiagramme der Golden-Model- und Hardware-Simulationen}
 
 \subsubsection{Synthese}
 Für das implementierte Gesamtsystem wurde eine Synthese mit \texttt{Quartus} durchgeführt. Als Zielplattform wurde der FPGA 5CSXFC6D6F31C6 des DE-10 Standard-Boards verwendet. Folgende Ressourcen werden für das Gesamtsystem benötigt bei einer Symbollänge von 320 Samples und einer Überabtastung von 16.
@@ -88,19 +88,19 @@ Diese sind in der nachstehenden Tabelle \ref{tab:resources_coarse} zu sehen.
 \begin{tabular}{|c|c|}
 \hline
 \textbf{Ressource} & \textbf{Menge} \\ \hline
-Register & 15,737 \\ \hline
-ALMs & 7,912 / 41,910 \\ \hline
+Register & 15,652 \\ \hline
+ALMs & 7,920 / 41,910 \\ \hline
 M10K-Blöcke & 42 / 553 \\ \hline
 Block Memory Bits & 134,896 / 5,662,720 \\ \hline
 Total Block Memory Implementation Bits & 430,080 / 5,662,720 \\ \hline
-DSP-Blöcke & 17 / 112 \\ \hline
+DSP-Blöcke & 11 / 112 \\ \hline
 Pins (theoretisch) & 48 / 499 \\ \hline
 \end{tabular}
 \caption{Tabelle mit benötigten Ressourcen.}
 \label{tab:resources_coarse}
 \end{table}
 
-Die Timing-Analyse hat ergeben, dass das Gesamtsystem im 1100mV-85C-Model mit einer maximalen Taktfrequenz von 79,8 MHz betrieben werden kann. Als Systemtakt sind 100 MHz vorgesehen.
+Die Timing-Analyse hat ergeben, dass das Gesamtsystem im 1100mV-85C-Model mit einer maximalen Taktfrequenz von 105,34 MHz betrieben werden kann. Als Systemtakt sind 100 MHz vorgesehen.
 
 \section{Komponenten}
 
