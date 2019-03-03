@@ -201,6 +201,13 @@ Pins (theoretisch) & 72 / 499 \\ \hline
 Die Timing-Analyse hat ergeben, dass das \texttt{Coarse Alignment} im 1100mV-85C-Model mit einer maximalen Taktfrequenz von 111,68 MHz betrieben werden kann. Als Systemtakt sind 100 MHz vorgesehen.
 
 \subsection{Cyclic Prefix Removal}
+Der Block CpRemoval bestand daraus, die ersten 64 Samples der insgesamt 256 zu entfernen und die restlichen Samples ohne Änderung weiter zu geben an den FFT-Block. Dazu wurde ein Zähler verwendet, welcher Werte ab den 64 Sample durchlässt und unter 64 verwirft.\\
+\\
+Die Synthese ergab folgendes:\\
+Maximale Clockfrequenz: 353.61 MHz.\\
+Hardwareressourcen:
+\includepicture{../img/synthese_CpRemoval.png}{0.80}{CpRemoval}{Syntheseergebnis \texttt{Cycle Prefix Removal}}.
+
 
 \subsection{FFT Wrapper}
 Für den FFT-Block  wurde ein Wrapper für die Altera-FFT implementierung gebaut. Dazu werden 256 I/Q Symbole in einem Buffer gespeichert. Dieser Buffer wird der Altera FFT implemssentierung übergeben, die Steuersignale Start und Valid gesetzt und die Berechnung der Altera FFT beginnt. Wenn die Altera FFT-Implementierung die Berechnung fertig hat, werden die Steuerung des Ausganges Valid und StartOfPacket gesetzt. Somit kann das FFT-Ergebnis wieder in den internen Buffer gespeichert werden. Die unbenutzen Frequenzen werden herausgefiltert und die Daten an das FineAlignment weitergegeben.
@@ -257,6 +264,16 @@ Die Synthese wurde ebenfalls für den Device 5CSXFC6D6F31C6 durchgeführt. Einge
 \end{table}
 
 \subsection{Demodulation}
+Die Demodulation hat die Aufgabe, OFDM Symbole wieder zurück auf Bitwerte zu mappen. Ein Symbol enthält 2 Bitinformationen, jeweils eine für Real- und Imaginäranteil. Ist der Symbolewert negativ, wird eine 1. Wenn das Symbol positiv ist, enthält das Bit den Wert 0.\\
+\\
+Der Block Demodulation wurde mit Quartus synthetisiert und ergab folgendes ergebnis:\\
+\\
+Maximal mögliche Taktfrequenz = 481.0 MHz.\\
+Hardwareressourcen:
+\includepicture{../img/synthese_demodulation.PNG}{0.80}{Demodulation}{Syntheseergebnis \texttt{Demodulation}}.	
+
+
+
 
 %\begin{thebibliography}{999}
 
